@@ -31,6 +31,16 @@ notify() {
     [ -x "$PING" ] && "$PING" --mac "iTerm2 fork: $1" || true
 }
 
+# Santa (lockdown + transitive allowlisting) approves what Apple's linker writes, but a build
+# tool can run a freshly linked binary (cargo build scripts) before the approval lands
+# ("No transitive rule created before timeout"). A second attempt reuses the now-approved
+# binaries, so every build step gets one retry.
+retry() {
+    "$@" && return 0
+    echo "retrying after a failure (Santa may still have been approving new binaries): $*"
+    "$@"
+}
+
 cd "$REPO"
 git fetch --quiet upstream --tags --filter=blob:none
 git fetch --quiet origin
@@ -68,11 +78,11 @@ git submodule update --init --recursive --quiet
 deps_key="$(xcodebuild -version | tr '\n' ' ')|$(git submodule status --recursive | shasum | cut -c1-16)"
 if [ ! -f "$BUILDS/deps-key" ] || [ "$(cat "$BUILDS/deps-key")" != "$deps_key" ]; then
     echo "building native dependencies"
-    taskpolicy -b make -j"$(sysctl -n hw.ncpu)" paranoid-deps BUILD_DIR="$BUILDS/out/build"
+    retry nice -n 10 make -j"$(sysctl -n hw.ncpu)" paranoid-deps BUILD_DIR="$BUILDS/out/build"
     echo "$deps_key" > "$BUILDS/deps-key"
 fi
 
-if ! taskpolicy -b "$WT/zach/build.sh" "$WT" "$BUILDS/out"; then
+if ! retry nice -n 10 "$WT/zach/build.sh" "$WT" "$BUILDS/out"; then
     notify "build of $build_id failed; still running the previous build (log: $LOG)"
     exit 3
 fi
