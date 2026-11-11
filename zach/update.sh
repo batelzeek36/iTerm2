@@ -26,6 +26,8 @@ LOG=$LOG_DIR/update-$STAMP.log
 exec > >(tee -a "$LOG") 2>&1
 echo "== $(date) fork update"
 
+source "${0:A:h}/xcode.sh"
+
 notify() {
     echo "NOTIFY: $1"
     [ -x "$PING" ] && "$PING" --mac "iTerm2 fork: $1" || true

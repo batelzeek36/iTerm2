@@ -19,9 +19,11 @@ codesign --force --options runtime --identifier com.zach.iterm2-fork-swap --sign
 mv -f "$BIN/swap-on-quit.new" "$BIN/swap-on-quit"
 
 # Replace scripts by rename, never in place: update.sh may be the script running right now.
-cp "$HERE/update.sh" "$BIN/update.sh.new"
-chmod 755 "$BIN/update.sh.new"
-mv -f "$BIN/update.sh.new" "$BIN/update.sh"
+for script in update.sh xcode.sh; do
+    cp "$HERE/$script" "$BIN/$script.new"
+    chmod 755 "$BIN/$script.new"
+    mv -f "$BIN/$script.new" "$BIN/$script"
+done
 
 if [ "${1:-}" = "--tools-only" ]; then
     # Restart the helper on its new binary if it is loaded.

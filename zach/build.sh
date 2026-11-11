@@ -12,6 +12,7 @@ IDENTITY="Developer ID Application: ZACHARY GERALD BATES ($TEAM)"
 DISABLED_FEED="http://127.0.0.1:9/zach-fork-nightly-updates-disabled.xml"
 
 export PATH="$HOME/.cargo/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+source "${0:A:h}/xcode.sh"
 cd "$SRC"
 mkdir -p "$OUT"
 
