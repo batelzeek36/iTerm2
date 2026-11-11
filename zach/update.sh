@@ -73,14 +73,29 @@ if ! git -c user.name="Zach Bates" -c user.email="batelzeek@gmail.com" \
 fi
 git submodule update --init --recursive --quiet
 
-# Native dependencies (OpenSSL, libsixel, libgit2, Sparkle, ...) are rebuilt, in upstream's
-# sandbox, whenever the Xcode version or any submodule changes.
-deps_key="$(xcodebuild -version | tr '\n' ' ')|$(git submodule status --recursive | shasum | cut -c1-16)"
-if [ ! -f "$BUILDS/deps-key" ] || [ "$(cat "$BUILDS/deps-key")" != "$deps_key" ]; then
-    echo "building native dependencies"
-    retry nice -n 10 make -j"$(sysctl -n hw.ncpu)" paranoid-deps BUILD_DIR="$BUILDS/out/build"
-    echo "$deps_key" > "$BUILDS/deps-key"
+# Native dependencies (OpenSSL, libsixel, libgit2, Sparkle, ...) are built in upstream's
+# sandbox, the same as `make paranoid-deps` minus sfsymbolenum: that step regenerates
+# ThirdParty/SFSymbolEnum from the SF Symbols app (a sudo .pkg install), and upstream commits
+# its output, so the committed files are used as they are.
+deps_targets=(${(z)$(sed -n 's/^deps: force //p' Makefile)})
+deps_targets=(${deps_targets:#sfsymbolenum})
+make_deps() {
+    nice -n 10 /usr/bin/sandbox-exec -f deps.sb make -j"$(sysctl -n hw.ncpu)" \
+        BUILD_DIR="$BUILDS/out/build" "${deps_targets[@]}"
+}
+# Rebuilt on every run: the worktree reset restores upstream's prebuilt copies (made with
+# upstream's Xcode), and the Xcode project refuses to build unless last-xcode-version matches
+# the Xcode in use.
+echo "building native dependencies: ${deps_targets[*]}"
+# Start from clean submodules (a previous build leaves outputs inside them).
+git submodule foreach --quiet --recursive 'git reset --quiet --hard && git clean --quiet -fdx'
+tools/check-submodule-cleanliness
+# The retry reruns make in place, keeping binaries Santa has approved by now.
+if ! retry make_deps; then
+    notify "native dependencies failed to build; still running the previous build (log: $LOG)"
+    exit 4
 fi
+xcodebuild -version > last-xcode-version
 
 if ! retry nice -n 10 "$WT/zach/build.sh" "$WT" "$BUILDS/out"; then
     notify "build of $build_id failed; still running the previous build (log: $LOG)"
