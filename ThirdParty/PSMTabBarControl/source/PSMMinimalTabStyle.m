@@ -936,11 +936,9 @@ static CGFloat PSMWeightedAverage(CGFloat l, CGFloat u, CGFloat w) {
 
 - (NSColor *)cellBackgroundColorForTabColor:(NSColor *)tabColor
                                    selected:(BOOL)selected {
-    CGFloat alpha = selected ? 1 : [[self.tabBar.delegate tabView:self.tabBar valueOfOption:PSMTabBarControlOptionMinimalNonSelectedColoredTabAlpha] doubleValue];
-    const BOOL keyMainAndActive = self.windowIsMainAndAppIsActive;
-    if (!keyMainAndActive) {
-        alpha *= 0.5;
-    }
+    // Fork (zach): tab colors keep the same strength whether or not the window is active.
+    // Upstream halves the alpha for inactive windows.
+    const CGFloat alpha = selected ? 1 : [[self.tabBar.delegate tabView:self.tabBar valueOfOption:PSMTabBarControlOptionMinimalNonSelectedColoredTabAlpha] doubleValue];
     return [tabColor colorWithAlphaComponent:alpha];
 }
 
