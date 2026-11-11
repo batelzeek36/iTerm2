@@ -98,6 +98,10 @@ if ! retry make_deps; then
     exit 4
 fi
 xcodebuild -version > last-xcode-version
+# Sparkle's nested helpers come out ad-hoc signed; sign them with Zach's Developer ID, as
+# upstream's `make sparkle SIGNED=1` does with George's.
+CODESIGN_IDENTITY="Developer ID Application: ZACHARY GERALD BATES (76Q7685NR2)" \
+    tools/sign_sparkle_helpers.sh ThirdParty/Sparkle.framework
 
 if ! retry nice -n 10 "$WT/zach/build.sh" "$WT" "$BUILDS/out"; then
     notify "build of $build_id failed; still running the previous build (log: $LOG)"
