@@ -47,7 +47,9 @@ retry() {
 cd "$REPO"
 git fetch --quiet upstream --tags --filter=blob:none
 git fetch --quiet origin
-tag=$(git tag -l 'v*-nightly' --sort=-creatordate | head -1)
+# No `| head -1` here: under pipefail, head exiting early kills git with SIGPIPE, and at
+# background priority that race fails most runs (11-12: 22 of 30, the job exited 141).
+tag=$(git for-each-ref --count=1 --sort=-creatordate --format='%(refname:short)' 'refs/tags/v*-nightly')
 [ -n "$tag" ] || { notify "no upstream nightly tag found"; exit 1; }
 ours=$(git rev-parse zach)
 build_id="$tag+$(git rev-parse --short "$ours")"
