@@ -5,10 +5,14 @@
     <key>Label</key>
     <string>com.zach.iterm2-fork-update</string>
     <key>ProgramArguments</key>
+    <!-- run-update, not /bin/zsh: a bare launchd shell cannot read ~/Documents (run-update/main.swift). -->
     <array>
-        <string>/bin/zsh</string>
-        <string>__HOME__/Documents/iTerm2-builds/bin/update.sh</string>
+        <string>__HOME__/Documents/iTerm2-builds/bin/run-update</string>
     </array>
+    <!-- At load too (login, install.sh, quiet hours' wake): catches up a night the 04:00 run
+         was paused. update.sh exits at once when the newest nightly is already built. -->
+    <key>RunAtLoad</key>
+    <true/>
     <key>StartCalendarInterval</key>
     <dict>
         <key>Hour</key>

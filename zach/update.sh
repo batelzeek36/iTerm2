@@ -1,5 +1,6 @@
 #!/bin/zsh
-# Nightly fork update (LaunchAgent com.zach.iterm2-fork-update, 04:00).
+# Nightly fork update (LaunchAgent com.zach.iterm2-fork-update, 04:00 and at load, started by
+# zach/run-update so it can read ~/Documents).
 #
 # 1. Fetch upstream (gnachman/iTerm2) and find the newest vYYYYMMDD-nightly tag.
 # 2. In a throwaway worktree, check out that tag and merge our `zach` branch into it.

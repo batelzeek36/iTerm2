@@ -1,7 +1,9 @@
 #!/bin/zsh
-# Install the fork tooling: the swap helper, the update script and their LaunchAgents.
+# Install the fork tooling: the swap helper, the update launcher, the update script and their
+# LaunchAgents.
 #   zach/install.sh               build + install everything, (re)load both LaunchAgents
-#   zach/install.sh --tools-only  rebuild the helper and copy the scripts (update.sh calls this)
+#                                 (loading the update agent starts an update run at once)
+#   zach/install.sh --tools-only  rebuild the helpers and copy the scripts (update.sh calls this)
 set -euo pipefail
 
 HERE=${0:A:h}
@@ -17,6 +19,15 @@ mkdir -p "$BIN" "$BUILDS/logs"
 swiftc -O "$HERE/swap-on-quit/main.swift" -o "$BIN/swap-on-quit.new"
 codesign --force --options runtime --identifier com.zach.iterm2-fork-swap --sign "$IDENTITY" "$BIN/swap-on-quit.new"
 mv -f "$BIN/swap-on-quit.new" "$BIN/swap-on-quit"
+
+# Update launcher: launchd runs this instead of /bin/zsh, because a bare launchd shell gets no
+# access to ~/Documents (see run-update/main.swift). Its own identifier keeps its privacy grant
+# across rebuilds (the grant follows identifier + team, not the binary's hash); the Info.plist
+# names it in the one-time prompt. Replaced by rename: it may be running update.sh right now.
+swiftc -O "$HERE/run-update/main.swift" -o "$BIN/run-update.new" \
+    -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __info_plist -Xlinker "$HERE/run-update/Info.plist"
+codesign --force --options runtime --identifier com.zach.iterm2-fork-update --sign "$IDENTITY" "$BIN/run-update.new"
+mv -f "$BIN/run-update.new" "$BIN/run-update"
 
 # Replace scripts by rename, never in place: update.sh may be the script running right now.
 for script in update.sh xcode.sh; do

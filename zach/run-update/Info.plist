@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Embedded in run-update (__TEXT,__info_plist) so macOS names it in the privacy prompt. -->
+<plist version="1.0">
+<dict>
+    <key>CFBundleIdentifier</key>
+    <string>com.zach.iterm2-fork-update</string>
+    <key>CFBundleName</key>
+    <string>iTerm2 fork update</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>NSDocumentsFolderUsageDescription</key>
+    <string>Builds the nightly iTerm2 fork from ~/Documents/iTerm2 and stages it to install when iTerm2 quits.</string>
+</dict>
+</plist>
