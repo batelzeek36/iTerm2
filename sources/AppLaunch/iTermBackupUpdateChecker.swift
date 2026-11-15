@@ -36,6 +36,11 @@ class BackupUpdateChecker: NSObject {
         if TestHostIsolation.isTestHost(environment: ProcessInfo.processInfo.environment) {
             return
         }
+        // Zach's fork: an isolated instance (-suite, or Claude Dock's Info.plist suite) never
+        // checks for updates, so it never shows the "update failed" alert either.
+        if iTermUserDefaults.customSuiteName() != nil {
+            return
+        }
         timer = Timer.scheduledTimer(withTimeInterval: 6 * 60 * 60, repeats: true) { [weak self] _ in
             self?.checkIfDue()
         }

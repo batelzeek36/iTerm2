@@ -79,6 +79,12 @@ class SoftwareUpdater: NSObject {
             DLog("Not starting the updater in a test host")
             return
         }
+        // Zach's fork: an isolated instance (-suite, or Claude Dock's Info.plist suite) never
+        // updates itself; the fork's own pipeline (zach/update.sh) replaces it.
+        if iTermUserDefaults.customSuiteName() != nil {
+            DLog("Not starting the updater in an isolated instance")
+            return
+        }
         started = true
         controller.startUpdater()
 

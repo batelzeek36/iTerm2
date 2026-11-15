@@ -29,6 +29,35 @@
 + (NSString *)suiteNameForBase:(NSString *)base;
 @end
 
+static void iTermUseCustomSuite(NSString *requestedName) {
+    // A unit-test host gets its own copy of the suite so parallel workers and later runs
+    // don't see each other's settings.
+    NSString *suiteName = [iTermTestHostIsolation suiteNameForBase:requestedName];
+    [iTermUserDefaults setCustomSuiteName:suiteName];
+    // Also set the custom socket prefix for file descriptor sockets
+    NSString *prefix = [NSString stringWithFormat:@"%@.socket.", suiteName];
+    iTermFileDescriptorSetSocketNamePrefix(prefix.UTF8String);
+}
+
+// Zach's fork: an app re-branded from this build (Claude Dock, zach/claude-dock) names its settings
+// suite in Info.plist, so a launch from Finder, the Dock or `open` is isolated exactly like
+// `-suite`: its own defaults, private defaults, Application Support folder, config folder and
+// sockets, never the main iTerm2's. A plain letters/digits/.-_ name only; anything else is ignored.
+static NSString *iTermForkSuiteNameFromInfoPlist(void) {
+    id value = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"ZachForkSettingsSuite"];
+    if (![value isKindOfClass:[NSString class]]) {
+        return nil;
+    }
+    NSString *name = value;
+    NSCharacterSet *allowed = [NSCharacterSet characterSetWithCharactersInString:
+                               @"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-_"];
+    if (name.length == 0 || name.length > 64 ||
+        [name rangeOfCharacterFromSet:allowed.invertedSet].location != NSNotFound) {
+        return nil;
+    }
+    return name;
+}
+
 int main(int argc, const char *argv[]) {
     if (argc >= 2 && !strcmp(argv[1], "--help")) {
         fprintf(stderr, "Usage: iTerm2 [--command=command] [-suite suite-name] [-compare-rendering string]\n");
@@ -54,17 +83,17 @@ int main(int argc, const char *argv[]) {
     // Parse -suite argument before any UserDefaults access.
     // Uses -suite (not --suite=) so Cocoa's argument parser treats it as a
     // standard -key value pair and doesn't misparse subsequent arguments.
+    BOOL haveSuite = NO;
     for (int i = 1; i + 1 < argc; i++) {
         if (strcmp(argv[i], "-suite") == 0) {
-            // A unit-test host gets its own copy of the suite so parallel workers and later runs
-            // don't see each other's settings.
-            NSString *suiteName = [iTermTestHostIsolation suiteNameForBase:[NSString stringWithUTF8String:argv[i + 1]]];
-            [iTermUserDefaults setCustomSuiteName:suiteName];
-            // Also set the custom socket prefix for file descriptor sockets
-            NSString *prefix = [NSString stringWithFormat:@"%@.socket.", suiteName];
-            iTermFileDescriptorSetSocketNamePrefix(prefix.UTF8String);
+            iTermUseCustomSuite([NSString stringWithUTF8String:argv[i + 1]]);
+            haveSuite = YES;
             break;
         }
+    }
+    NSString *forkSuite = haveSuite ? nil : iTermForkSuiteNameFromInfoPlist();
+    if (forkSuite) {
+        iTermUseCustomSuite(forkSuite);
     }
     [iTermInstanceLock acquire];
     if ([[iTermUserDefaults userDefaults] boolForKey:@"MetalCaptureEnabled"]) {

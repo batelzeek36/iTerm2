@@ -1518,7 +1518,10 @@ void TurnOnDebugLoggingAutomatically(void) {
     // silent once a decision exists and lets us recover after a TCC reset or OS upgrade (issue
     // 12956). Not for a unit test host: it needs no local network, and the prompt would sit
     // unanswered on a machine running tests unattended.
-    if (![NSApp isRunningUnitTests]) {
+    // Zach's fork: nor for an isolated instance (-suite, or Claude Dock's Info.plist suite): a
+    // Claude panel or a test copy needs no local network, and the prompt would land on top of
+    // whatever it is docked to.
+    if (![NSApp isRunningUnitTests] && ![iTermUserDefaults customSuiteName]) {
         DLog(@"Prompt for local network permission");
         [[iTermLocalNetworkPermissionPrompter shared] prompt];
     }
