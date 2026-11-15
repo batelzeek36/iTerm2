@@ -101,6 +101,9 @@ final class AppDockSettingsTests: XCTestCase {
         XCTAssertEqual(AppDockFocusPolicy.focusAction(targetWindowPresent: true, panelIsKey: false), .focusPanel)
         XCTAssertEqual(AppDockFocusPolicy.focusAction(targetWindowPresent: true, panelIsKey: true), .returnFocusToTarget)
         XCTAssertEqual(AppDockFocusPolicy.focusAction(targetWindowPresent: false, panelIsKey: false), .nothing)
+        // Click-through unless it has the keyboard (a click on a bag item under it reaches the game).
+        XCTAssertFalse(AppDockFocusPolicy.terminalTakesClicks(panelIsKey: false))
+        XCTAssertTrue(AppDockFocusPolicy.terminalTakesClicks(panelIsKey: true))
     }
 
     func testHotKeyHint() {

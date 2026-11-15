@@ -104,6 +104,9 @@ struct AppDockGeometry: Equatable {
     var panelFrame: CGRect
     // The terminal window: inside the border, below the header.
     var terminalFrame: CGRect
+    // The header strip: inside the border, above the line under it. The only part of the
+    // panel that takes a click while the terminal does not have the keyboard.
+    var headerFrame: CGRect
     var header: AppDockHeaderMetrics
     // Terminal font size in points, in half-point steps.
     var fontSize: CGFloat
@@ -151,6 +154,10 @@ struct AppDockGeometry: Equatable {
                                y: panelFrame.minY + b,
                                width: panelFrame.width - 2 * b,
                                height: panelFrame.height - b - top)
+        headerFrame = CGRect(x: panelFrame.minX + b,
+                             y: panelFrame.maxY - b - header.height,
+                             width: panelFrame.width - 2 * b,
+                             height: header.height)
         guard terminalFrame.width >= 40, terminalFrame.height >= 20 else {
             return nil
         }

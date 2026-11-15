@@ -130,6 +130,13 @@ final class AppDockGeometryTests: XCTestCase {
         XCTAssertEqual(g.terminalFrame.maxX, g.panelFrame.maxX - b)
         XCTAssertEqual(g.terminalFrame.minY, g.panelFrame.minY + b)
         XCTAssertEqual(g.terminalFrame.maxY, g.panelFrame.maxY - b - g.header.height - b)
+        // The header (the only part that takes clicks while unfocused) sits inside the border,
+        // directly above the line under it, and never overlaps the terminal.
+        XCTAssertEqual(g.headerFrame.minX, g.terminalFrame.minX)
+        XCTAssertEqual(g.headerFrame.width, g.terminalFrame.width)
+        XCTAssertEqual(g.headerFrame.maxY, g.panelFrame.maxY - b)
+        XCTAssertEqual(g.headerFrame.minY, g.terminalFrame.maxY + b)
+        XCTAssertFalse(g.headerFrame.intersects(g.terminalFrame))
         // Header proportions from the comp: 1.95em of a font 1.12x the terminal's.
         XCTAssertEqual(g.header.fontSize, g.fontSize * 1.12, accuracy: 0.01)
         XCTAssertEqual(g.header.height, g.fontSize * 1.12 * 1.95, accuracy: 0.5)

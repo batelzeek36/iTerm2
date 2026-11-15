@@ -46,4 +46,11 @@ enum AppDockFocusPolicy {
         }
         return panelIsKey ? .returnFocusToTarget : .focusPanel
     }
+
+    // The terminal takes mouse events only while it has the keyboard. Otherwise a click (or a
+    // scroll) in its slot goes to the game under it - a bag opened there, say - and can never
+    // hand the keyboard to the terminal. Only the header focuses it.
+    static func terminalTakesClicks(panelIsKey: Bool) -> Bool {
+        return panelIsKey
+    }
 }
