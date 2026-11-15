@@ -80,7 +80,7 @@ fi
 # (NMSSH's prebuilt libssl.a and friends), and a nightly that bumps such a submodule makes
 # `submodule update` refuse to check it out (11-14 04:00: "Your local changes ... would be
 # overwritten by checkout", the run died without a notification).
-git submodule foreach --quiet --recursive 'git reset --quiet --hard && git clean --quiet -fdx'
+git submodule foreach --quiet --recursive 'git reset --quiet --hard && git clean --quiet -ffdx'
 if ! git submodule update --init --recursive --quiet; then
     notify "submodule checkout for $tag failed; still running the previous build (log: $LOG)"
     exit 5
@@ -101,7 +101,7 @@ make_deps() {
 # the Xcode in use.
 echo "building native dependencies: ${deps_targets[*]}"
 # Clean again after the checkout: a submodule that moved can leave files behind.
-git submodule foreach --quiet --recursive 'git reset --quiet --hard && git clean --quiet -fdx'
+git submodule foreach --quiet --recursive 'git reset --quiet --hard && git clean --quiet -ffdx'
 tools/check-submodule-cleanliness
 # The retry reruns make in place, keeping binaries Santa has approved by now.
 if ! retry make_deps; then
