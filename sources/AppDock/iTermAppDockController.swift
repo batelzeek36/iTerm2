@@ -41,6 +41,9 @@ final class AppDockController: NSObject {
     private var appliedFontSize: CGFloat?
     private var appObservers = [NSObjectProtocol]()
     private var windowObservers = [NSObjectProtocol]()
+    // A Dock-icon click waiting for the target app to become active before focusing the panel.
+    private var activationObserver: NSObjectProtocol?
+    private var activationWaitGeneration = 0
 
     init(settings: AppDockSettings) {
         self.settings = settings
@@ -104,6 +107,7 @@ final class AppDockController: NSObject {
 
     // The profile is gone or no longer docked.
     func tearDown() {
+        cancelActivationWait()
         tracker.stop()
         focusHotKey?.unregisterFromController()
         visibilityHotKey?.unregisterFromController()
@@ -169,6 +173,106 @@ final class AppDockController: NSObject {
             }
         case .returnFocusToTarget:
             returnFocusToTarget()
+        }
+    }
+
+    // MARK: - Dock icon (Claude Dock)
+
+    var hasTargetWindow: Bool {
+        return tracker.target != nil
+    }
+
+    // The app's Dock icon was clicked (AppDockManager). The click made this app active, so the
+    // target app gets activation back first; then the panel takes the keyboard, ending exactly
+    // as after the hotkey: the game active, the panel on it with the keyboard.
+    func dockIconClicked() {
+        guard let app = tracker.runningApp, tracker.target != nil else {
+            explainMissingTarget()
+            return
+        }
+        hiddenByUser = false
+        if NSWorkspace.shared.frontmostApplication?.processIdentifier == app.processIdentifier {
+            focusPanelCreatingIfNeeded()
+            return
+        }
+        cancelActivationWait()
+        activationWaitGeneration += 1
+        let generation = activationWaitGeneration
+        let pid = app.processIdentifier
+        activationObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didActivateApplicationNotification,
+            object: nil,
+            queue: .main) { [weak self] note in
+            let activated = note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication
+            if activated?.processIdentifier == pid {
+                self?.finishActivationWait(generation)
+            }
+        }
+        // If the activation never shows up (the target ignored it), focus the panel anyway.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+            self?.finishActivationWait(generation)
+        }
+        app.activate(options: [])
+    }
+
+    // Nothing can come up: the target app has no window for the panel to live in.
+    func explainMissingTarget() {
+        let name = targetDisplayName()
+        let hint = hotKeyHint
+        DLog("App dock: Dock icon clicked but \(settings.bundleID) has no window")
+        let body: String
+        if hint.isEmpty {
+            body = String(localized: "AppDock.NoTargetWindowBody",
+                          defaultValue: "The panel lives in the \(name) window. It appears when that window opens.",
+                          comment: "Shown when the Dock icon of an app that only hosts a panel docked to another app (Claude Dock) is clicked while that app has no window. The placeholder is the other app’s name.")
+        } else {
+            body = String(localized: "AppDock.NoTargetWindowBodyWithHotKey",
+                          defaultValue: "The panel lives in the \(name) window. It appears when that window opens, and \(hint) gives it the keyboard.",
+                          comment: "Shown when the Dock icon of an app that only hosts a panel docked to another app (Claude Dock) is clicked while that app has no window. The first placeholder is the other app’s name, the second the panel’s keyboard shortcut, such as ⌃⌥⌘C.")
+        }
+        iTermWarning.show(withTitle: body,
+                          actions: [iTermLocalizedOK()],
+                          accessory: nil,
+                          identifier: nil,
+                          silenceable: .kiTermWarningTypePersistent,
+                          heading: String(localized: "AppDock.NoTargetWindowHeading",
+                                          defaultValue: "No \(name) Window",
+                                          comment: "Heading of the alert shown when the Dock icon of an app that only hosts a docked panel (Claude Dock) is clicked while the app it docks to has no window. The placeholder is that app’s name."),
+                          window: nil)
+    }
+
+    private func targetDisplayName() -> String {
+        if let path = settings.appPath, FileManager.default.fileExists(atPath: path) {
+            return FileManager.default.displayName(atPath: path)
+        }
+        if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: settings.bundleID) {
+            return FileManager.default.displayName(atPath: url.path)
+        }
+        return settings.windowTitle ?? settings.bundleID
+    }
+
+    private func finishActivationWait(_ generation: Int) {
+        guard generation == activationWaitGeneration, activationObserver != nil else {
+            return
+        }
+        cancelActivationWait()
+        focusPanelCreatingIfNeeded()
+    }
+
+    private func cancelActivationWait() {
+        if let activationObserver {
+            NSWorkspace.shared.notificationCenter.removeObserver(activationObserver)
+        }
+        activationObserver = nil
+    }
+
+    private func focusPanelCreatingIfNeeded() {
+        hiddenByUser = false
+        if term == nil {
+            focusWhenCreated = true
+            createWindowIfNeeded()
+        } else {
+            focusPanel()
         }
     }
 

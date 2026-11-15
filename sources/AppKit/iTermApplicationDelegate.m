@@ -987,6 +987,19 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
 - (BOOL)applicationShouldHandleReopen:(NSApplication *)theApplication
                     hasVisibleWindows:(BOOL)flag {
     DLog(@"Dock icon clicked");
+    // Zach's fork: an isolated instance that docks a panel to another app's window (Claude Dock,
+    // zach/claude-dock) brings that panel up instead of opening a terminal window.
+    // iTermAppDockManager.swift observes this notification name.
+    if ([iTermUserDefaults customSuiteName]) {
+        for (Profile *profile in [[ProfileModel sharedInstance] bookmarks]) {
+            if ([iTermAppDockWindowMarker isDockedProfile:profile]) {
+                DLog(@"Isolated instance with a docked profile: bring the panel up");
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"iTermAppDockDockIconClicked"
+                                                                    object:nil];
+                return NO;
+            }
+        }
+    }
     const BOOL result = ![[iTermHotKeyController sharedInstance] dockIconClicked];
     DLog(@"Return %@", @(result));
     return result;
