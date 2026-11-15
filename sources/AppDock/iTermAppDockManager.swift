@@ -29,7 +29,34 @@ final class AppDockManager: NSObject {
                                                    name: name,
                                                    object: nil)
         }
+        NotificationCenter.default.addObserver(forName: Self.dockIconClickedNotification,
+                                               object: nil,
+                                               queue: .main) { [weak self] _ in
+            self?.dockIconClicked()
+        }
         refresh()
+    }
+
+    // Posted by iTermApplicationDelegate's applicationShouldHandleReopen when the Dock icon of an
+    // isolated instance with a docked profile is clicked (Claude Dock): instead of a terminal
+    // window, that click brings the panel up. The name is repeated there as a string literal.
+    static let dockIconClickedNotification = Notification.Name("iTermAppDockDockIconClicked")
+
+    // The panel whose target window is open comes up with the keyboard; with no target window
+    // anywhere, the first panel says why nothing can come up.
+    private func dockIconClicked() {
+        if controllers.isEmpty {
+            // A profile edit may still be waiting for the coalesced refresh.
+            refresh()
+        }
+        let ordered = controllers.keys.sorted().compactMap { controllers[$0] }
+        if let controller = ordered.first(where: { $0.hasTargetWindow }) {
+            controller.dockIconClicked()
+        } else if let controller = ordered.first {
+            controller.explainMissingTarget()
+        } else {
+            DLog("App dock: Dock icon clicked but no profile is docked")
+        }
     }
 
     @objc private func profilesDidChange(_ notification: Notification) {

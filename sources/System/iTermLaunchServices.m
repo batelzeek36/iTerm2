@@ -110,6 +110,11 @@ static NSString *const kOldStyleUrlHandlersUserDefaultsKey = @"URLHandlers";
 }
 
 - (void)registerForiTerm2Scheme {
+    // Zach's fork: an isolated instance (-suite, or Claude Dock's Info.plist suite) leaves the
+    // iterm2: links with the main iTerm2.
+    if ([iTermUserDefaults customSuiteName]) {
+        return;
+    }
     LSSetDefaultHandlerForURLScheme((CFStringRef)@"iterm2",
                                     (CFStringRef)[[NSBundle mainBundle] bundleIdentifier]);
 }

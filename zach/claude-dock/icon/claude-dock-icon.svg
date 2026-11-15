@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- Claude Dock's app icon. macOS icon grid: an 824 px rounded tile on a 1024 canvas.
+       The tile is the host window (World of Warcraft); in its lower-right slot sits the docked
+       panel in the approved WoW look: flat ElvUI panel, black edge, gold header tab, violet
+       prompt. Colors: violet #cdb8ff, gold #f3cd5a (zach/profiles/claude-over-wow.py).
+       make-icns.py turns this into ClaudeDock.icns; rebrand.sh puts that in the app. -->
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="#0e0b17"/>
+  <rect x="104" y="104" width="816" height="816" rx="181" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="4"/>
+  <rect x="330" y="372" width="494" height="452" fill="#1d1830" stroke="#000000" stroke-width="10"/>
+  <rect x="330" y="372" width="494" height="92" fill="#f3cd5a"/>
+  <polyline points="414,556 524,642 414,728" fill="none" stroke="#cdb8ff" stroke-width="56" stroke-linecap="square" stroke-linejoin="miter"/>
+  <rect x="574" y="702" width="170" height="46" fill="#cdb8ff"/>
+</svg>

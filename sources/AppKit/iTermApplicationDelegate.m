@@ -987,6 +987,19 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
 - (BOOL)applicationShouldHandleReopen:(NSApplication *)theApplication
                     hasVisibleWindows:(BOOL)flag {
     DLog(@"Dock icon clicked");
+    // Zach's fork: an isolated instance that docks a panel to another app's window (Claude Dock,
+    // zach/claude-dock) brings that panel up instead of opening a terminal window.
+    // iTermAppDockManager.swift observes this notification name.
+    if ([iTermUserDefaults customSuiteName]) {
+        for (Profile *profile in [[ProfileModel sharedInstance] bookmarks]) {
+            if ([iTermAppDockWindowMarker isDockedProfile:profile]) {
+                DLog(@"Isolated instance with a docked profile: bring the panel up");
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"iTermAppDockDockIconClicked"
+                                                                    object:nil];
+                return NO;
+            }
+        }
+    }
     const BOOL result = ![[iTermHotKeyController sharedInstance] dockIconClicked];
     DLog(@"Return %@", @(result));
     return result;
@@ -1518,7 +1531,10 @@ void TurnOnDebugLoggingAutomatically(void) {
     // silent once a decision exists and lets us recover after a TCC reset or OS upgrade (issue
     // 12956). Not for a unit test host: it needs no local network, and the prompt would sit
     // unanswered on a machine running tests unattended.
-    if (![NSApp isRunningUnitTests]) {
+    // Zach's fork: nor for an isolated instance (-suite, or Claude Dock's Info.plist suite): a
+    // Claude panel or a test copy needs no local network, and the prompt would land on top of
+    // whatever it is docked to.
+    if (![NSApp isRunningUnitTests] && ![iTermUserDefaults customSuiteName]) {
         DLog(@"Prompt for local network permission");
         [[iTermLocalNetworkPermissionPrompter shared] prompt];
     }
