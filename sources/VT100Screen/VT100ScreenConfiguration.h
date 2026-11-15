@@ -65,6 +65,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) int maxScrollbackLines;
 @property (nonatomic, readonly) BOOL loggingEnabled;
 @property (nonatomic, copy, readonly) NSDictionary<NSString *, id> *terminfoValues;
+// Zach's fork: 24-bit foreground colors to replace, packed 0xRRGGBB -> 0xRRGGBB.
+@property (nonatomic, copy, readonly) NSDictionary<NSNumber *, NSNumber *> *trueColorRemap;
 @property (nonatomic, readonly) BOOL alertOnNextMark;
 @property (nonatomic, readonly) double dimmingAmount;
 @property (nonatomic, readonly) BOOL publishing;
@@ -142,6 +144,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readwrite) int maxScrollbackLines;
 @property (nonatomic, readwrite) BOOL loggingEnabled;
 @property (nonatomic, copy, readwrite) NSDictionary<NSString *, id> *terminfoValues;
+@property (nonatomic, copy, readwrite) NSDictionary<NSNumber *, NSNumber *> *trueColorRemap;
 @property (nonatomic, copy) NSDictionary *terminalValuesDigest;  // Used to tell if terminfoValues needs to be updated.
 @property (nonatomic, readwrite) BOOL alertOnNextMark;
 @property (nonatomic, readwrite) double dimmingAmount;

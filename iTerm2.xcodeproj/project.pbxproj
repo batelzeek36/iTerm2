@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		045FA89E009DF45CBDCBAA67 /* iTermTrueColorRemap.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE6921B44D2C2B687E788E9C /* iTermTrueColorRemap.swift */; };
 		CBC96459BD6FC8896785A3D9 /* TmuxWorkgroupPeerCreation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FA61C02D50EE6E66768FE0C /* TmuxWorkgroupPeerCreation.swift */; };
 		3EF33423CA26E1A5D858D1C9 /* TmuxWorkgroupAdoption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD54BF2A45695A8C76271D5 /* TmuxWorkgroupAdoption.swift */; };
 		40063C16D73D3B917B920C9B /* FramerPaneStrandedFinder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 704E93B8A70AA0106E558871 /* FramerPaneStrandedFinder.swift */; };
@@ -5158,6 +5159,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		EE6921B44D2C2B687E788E9C /* iTermTrueColorRemap.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermTrueColorRemap.swift; sourceTree = "<group>"; };
 		413B31365A66C69AAB923889 /* BashWordSplitter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BashWordSplitter.swift; sourceTree = "<group>"; };
 		F7F500F98D6607037DCEB270 /* iTermFloatingPaneView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermFloatingPaneView.swift; sourceTree = "<group>"; };
 		F87F998134B918DB629CE574 /* iTermProfileReadRecorder.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = iTermProfileReadRecorder.m; sourceTree = "<group>"; };
@@ -9366,6 +9368,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		EF344A2EEF886D457167F811 /* AppDock */ = {
+			isa = PBXGroup;
+			children = (
+				EE6921B44D2C2B687E788E9C /* iTermTrueColorRemap.swift */,
+			);
+			path = AppDock;
+			sourceTree = "<group>";
+		};
 		CB8346FD2E66E07964DE2CCD /* FloatingPanes */ = {
 			isa = PBXGroup;
 			children = (
@@ -9457,6 +9467,7 @@
 				A6B150022F985CA2006C7417 /* FileTypes */,
 				A6DC0A3A2F9852270071E6A1 /* FixBrokenAppleCrap */,
 				CB8346FD2E66E07964DE2CCD /* FloatingPanes */,
+				EF344A2EEF886D457167F811 /* AppDock */,
 				A672CC902F984B5300EAC0FB /* FocusFollowsMouse */,
 				A6CD8B4C2F983F89003EA0C1 /* Fonts */,
 				A6B14FFF2F985BF5006C7417 /* Formatting */,
@@ -20451,6 +20462,7 @@
 				F639888C586AAEB1D3D93A3F /* iTermWeakObserverList.swift in Sources */,
 				3B7DA5807C8D054592F05EEC /* iTermInstanceLock.swift in Sources */,
 				93192814C6B3391E62C3E35F /* FloatingPaneGeometry.swift in Sources */,
+				045FA89E009DF45CBDCBAA67 /* iTermTrueColorRemap.swift in Sources */,
 				9D0D14C1945083235F5403E0 /* FloatingPaneLayout.swift in Sources */,
 				E51022C4CA99B9A7D4D73476 /* FloatingPaneBuiltInFunctions.swift in Sources */,
 				855352C7250CEC10AF17E728 /* TmuxJSONLayoutParser.swift in Sources */,

@@ -1294,8 +1294,28 @@ static const int kMaxScreenRows = 4096;
                     break;
             }
         }
+        [self remapTrueColorForeground];
     }
     [self updateDefaultChar];
+}
+
+// Zach's fork: a profile can swap an app's 24-bit text colors for its own (an app-docked
+// panel turns Claude Code's orange into its gold).
+- (void)remapTrueColorForeground {
+    if (_trueColorRemap.count == 0 || graphicRendition_.fgColorMode != ColorMode24bit) {
+        return;
+    }
+    const int packed = ((graphicRendition_.fgColorCode & 0xff) << 16) |
+                       ((graphicRendition_.fgGreen & 0xff) << 8) |
+                       (graphicRendition_.fgBlue & 0xff);
+    NSNumber *replacement = _trueColorRemap[@(packed)];
+    if (!replacement) {
+        return;
+    }
+    const int value = replacement.intValue;
+    graphicRendition_.fgColorCode = (value >> 16) & 0xff;
+    graphicRendition_.fgGreen = (value >> 8) & 0xff;
+    graphicRendition_.fgBlue = value & 0xff;
 }
 
 // See comment on executeXtermSetPalette for details of the control sequence.

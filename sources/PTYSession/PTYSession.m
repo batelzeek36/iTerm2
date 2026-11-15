@@ -20466,6 +20466,7 @@ static NSString *PTYSessionDECRQCRANoLabel(void) {
         _config.allowTitleReporting = [iTermProfilePreferences boolForKey:KEY_ALLOW_TITLE_REPORTING inProfile:_profile];
         _config.allowTitleSetting = [iTermProfilePreferences boolForKey:KEY_ALLOW_TITLE_SETTING inProfile:_profile];
         _config.allowAlternateMouseScroll = [iTermProfilePreferences boolForKey:KEY_ALLOW_ALTERNATE_MOUSE_SCROLL inProfile:_profile];
+        _config.trueColorRemap = [iTermTrueColorRemap remapForProfile:_profile];
 
         dirty = YES;
         _profileDidChange = NO;
