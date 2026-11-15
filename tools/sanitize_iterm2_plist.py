@@ -105,6 +105,9 @@ embedded in arrangements under Bookmark / Initial Profile)
   Filename Format, Archive Directory, Browser Extensions Root, Dynamic
   Profile Filename, Custom Locale, Bound Hosts, Jobs to Ignore, Snippets
   Filter, tmux Pane Title
+  Zach's fork, app-docked panels: Dock To App Path, Dock ElvUI SavedVariables
+  (paths), Dock Window Title, Dock ElvUI Character, Dock Header Title,
+  Dock Header Subtitle (user text)
   Nested: Triggers, Smart Selection Rules, Keyboard Map, Touch Bar Map,
           SSH, Semantic History, Status Bar Layout, Bindings
   Kept (NOT sensitive): Custom Command / Custom Directory / AWDS *Option
@@ -233,6 +236,13 @@ CONTENT_KEYS = {
     "PasteSpecialSubstitution": REDACT_V,
     # filesystem paths / directories
     "Working Directory": REDACT_V,
+    # Zach's fork: app-docked panels (sources/AppDock)
+    "Dock To App Path": REDACT_V,
+    "Dock ElvUI SavedVariables": REDACT_V,
+    "Dock Window Title": REDACT_V,
+    "Dock ElvUI Character": REDACT_V,
+    "Dock Header Title": REDACT_V,
+    "Dock Header Subtitle": REDACT_V,
     # Session directory tracker state (iTermSessionDirectoryTracker), stored
     # flat in the session arrangement dict.
     "Last Directory": REDACT_V,

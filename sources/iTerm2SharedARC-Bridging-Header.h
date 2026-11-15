@@ -305,6 +305,7 @@
 #import "iTermUnderlineSpanTestHelper.h"
 #import "iTermShortcut.h"
 #import "iTermCarbonHotKeyController.h"
+#import "iTermAppDockHotKey.h"
 #import "iTermOpenQuicklyWindowController.h"
 #import "iTermSessionPreviewPanel.h"
 #import "iTermMinimalComposerViewController.h"

@@ -76,6 +76,9 @@ extern NSString *const iTermDidCreateTerminalWindowNotification;
 
 // What kind of hotkey window this is, if any.
 @property(nonatomic, assign) iTermHotkeyWindowType hotkeyWindowType;
+// Zach's fork: the window is an app-docked panel (sources/AppDock). Its dock controller owns
+// its frame, level and visibility; it is never tiled, fitted to its tabs or restored.
+@property(nonatomic, readonly) BOOL isAppDocked;
 
 // A unique string for this window. Used for tmux to remember which window
 // a tmux window should be opened in as a tab. A window restored from a

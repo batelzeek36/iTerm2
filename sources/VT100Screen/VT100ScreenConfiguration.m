@@ -48,6 +48,7 @@
 @property (nonatomic, readwrite) int maxScrollbackLines;
 @property (nonatomic, readwrite) BOOL loggingEnabled;
 @property (nonatomic, copy, readwrite) NSDictionary<NSString *, id> *terminfoValues;
+@property (nonatomic, copy, readwrite) NSDictionary<NSNumber *, NSNumber *> *trueColorRemap;
 @property (nonatomic, readwrite) BOOL alertOnNextMark;
 @property (nonatomic, readwrite) double dimmingAmount;
 @property (nonatomic, readwrite) BOOL publishing;
@@ -129,6 +130,7 @@
 
 @synthesize isDirty = _isDirty;
 @synthesize terminfoValues = _terminfoValues;
+@synthesize trueColorRemap = _trueColorRemap;
 
 - (instancetype)initFrom:(VT100ScreenConfiguration *)other {
     self = [super init];
@@ -170,6 +172,7 @@
         _maxScrollbackLines = other.maxScrollbackLines;
         _loggingEnabled = other.loggingEnabled;
         _terminfoValues = other.terminfoValues;
+        _trueColorRemap = other.trueColorRemap;
         _alertOnNextMark = other.alertOnNextMark;
         _dimmingAmount = other.dimmingAmount;
         _publishing = other.publishing;
@@ -241,6 +244,7 @@
                             @"maxScrollbackLines": @(_maxScrollbackLines),
                             @"loggingEnabled": @(_loggingEnabled),
                             @"terminfoValues": _terminfoValues ?: @"",
+                            @"trueColorRemap": _trueColorRemap ?: @{},
                             @"alertOnNextMark": @(_alertOnNextMark),
                             @"dimmingAmount": @(_dimmingAmount),
                             @"publishing": @(_publishing),
@@ -315,6 +319,7 @@
 @dynamic maxScrollbackLines;
 @dynamic loggingEnabled;
 @dynamic terminfoValues;
+@dynamic trueColorRemap;
 @dynamic alertOnNextMark;
 @dynamic dimmingAmount;
 @dynamic publishing;

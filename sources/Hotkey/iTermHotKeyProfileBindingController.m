@@ -1,5 +1,7 @@
 #import "iTermHotKeyProfileBindingController.h"
 
+#import "iTerm2SharedARC-Swift.h"
+
 #import "DebugLogging.h"
 #import "ITAddressBookMgr.h"
 #import "iTermHotKeyController.h"
@@ -50,7 +52,9 @@
             continue;
         }
         [guidsOfProfileHotKeys removeObject:guid];
-        const BOOL hasHotKey = [iTermProfilePreferences boolForKey:KEY_HAS_HOTKEY inProfile:profile];
+        // Zach's fork: an app-docked profile's hotkey focuses its panel instead (sources/AppDock).
+        const BOOL hasHotKey = ([iTermProfilePreferences boolForKey:KEY_HAS_HOTKEY inProfile:profile] &&
+                                ![iTermAppDockWindowMarker isDockedProfile:profile]);
 
         // Unregister. If the key has changed, we'll re-register. If the profile no longer has a hotkey
         // it will stay unregistered.

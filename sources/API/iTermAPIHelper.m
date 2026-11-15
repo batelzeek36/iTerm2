@@ -2861,6 +2861,12 @@ static NSString *const iTermAPIFloatingPanesFirstAwarePythonVersion = @"2.26";
                  completion:(void (^)(ITMSetPropertyResponse *))completion {
     ITMSetPropertyResponse *response = [[ITMSetPropertyResponse alloc] init];
     void (^setFrame)(void) = ^{
+        if (term.isAppDocked) {
+            // Zach's fork: an app-docked panel's frame follows its target window only.
+            response.status = ITMSetPropertyResponse_Status_Failed;
+            completion(response);
+            return;
+        }
         NSDictionary *dict = [NSDictionary castFrom:value];
         NSDictionary *origin = dict[@"origin"];
         NSDictionary *size = dict[@"size"];

@@ -630,6 +630,7 @@ typedef NS_ENUM(int, iTermShouldHaveTitleSeparator) {
     _automaticallySelectNewTabs = YES;
     _automaticallyOrderFrontNewTabs = YES;
     _creationTime = [NSDate it_timeSinceBoot];
+    _isAppDocked = [iTermAppDockWindowMarker isMarkedProfile:profile];
     const iTermWindowType windowType = iTermThemedWindowType(unsafeWindowType);
     iTermWindowType savedWindowType = iTermThemedWindowType(unsafeSavedWindowType);
     RLog(@"-[%p finishInitializationWithSmartLayout:%@ windowType:%d screen:%d hotkeyWindowType:%@ ",
@@ -1033,6 +1034,10 @@ typedef NS_ENUM(int, iTermShouldHaveTitleSeparator) {
 - (void)setTerminalGuid:(NSString *)terminalGuid {
     assert(_scope);
     _scope.windowID = terminalGuid;
+    if (_isAppDocked) {
+        // Lets scripts that arrange windows (Zach's auto_tile.py) leave this one alone.
+        [_scope setValue:@YES forVariableNamed:@"user.appDocked"];
+    }
 }
 
 - (NSString *)terminalGuid {
@@ -1049,6 +1054,13 @@ typedef NS_ENUM(int, iTermShouldHaveTitleSeparator) {
 
 - (NSWindowCollectionBehavior)desiredWindowCollectionBehavior {
     NSWindowCollectionBehavior result = self.window.collectionBehavior;
+    if (self.isAppDocked) {
+        // Follows its target app onto any Space, including a fullscreen one; never cycled.
+        return (NSWindowCollectionBehaviorCanJoinAllSpaces |
+                NSWindowCollectionBehaviorFullScreenAuxiliary |
+                NSWindowCollectionBehaviorIgnoresCycle |
+                NSWindowCollectionBehaviorTransient);
+    }
     if (self.windowType == WINDOW_TYPE_ACCESSORY) {
         return (NSWindowCollectionBehaviorFullScreenAuxiliary |
                 NSWindowCollectionBehaviorManaged |
@@ -6013,6 +6025,9 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
 }
 
 - (BOOL)tabBarAlwaysVisible {
+    if (self.isAppDocked) {
+        return NO;
+    }
     return ![iTermPreferences boolForKey:kPreferenceKeyHideTabBar];
 }
 
@@ -6896,6 +6911,11 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
         self.contentView.backgroundImage.transparency = transparency;
         self.contentView.backgroundImage.blend = self.currentSession.desiredBlend;
         [CATransaction commit];
+    }
+    if (self.isAppDocked) {
+        // An app-docked panel is flat, like the game UI it sits in.
+        shouldEnableShadow = NO;
+        window.hasShadow = NO;
     }
     if (shouldEnableShadow) {
         window.hasShadow = YES;
@@ -12878,6 +12898,11 @@ typedef struct {
 // NOTE: The preferred height is respected only if it would be larger than the height the window would
 // otherwise be set to and is less than the max height (self.maxFrame.size.height).
 - (BOOL)fitWindowToTabSize:(NSSize)tabSize preferredHeight:(NSNumber *)preferredHeight {
+    if (self.isAppDocked) {
+        // The dock controller owns the frame; the tabs fit the window instead.
+        [self fitTabsToWindow];
+        return NO;
+    }
     PseudoTerminalWindowFrameInfo frameInfo = [self windowFrameForTabSize:tabSize
                                                           preferredHeight:preferredHeight];
     if (!frameInfo.ok) {
@@ -14709,7 +14734,9 @@ static BOOL iTermApproximatelyEqualRects(NSRect lhs, NSRect rhs, double epsilon)
         }
         if (self.windowInitialized && !_fullScreen && !_restoringWindow) {
             RLog(@"insertTab: window is initialized, not full screen, and we are not restoring windows.");
-            if (self.isHotKeyWindow && self.window.alphaValue == 0) {
+            if (self.isAppDocked) {
+                RLog(@"App-docked window: its dock controller decides when it is shown");
+            } else if (self.isHotKeyWindow && self.window.alphaValue == 0) {
                 RLog(@"This appears to be an invisible hotkey window %@", self);
                 iTermProfileHotKey *profileHotkey = [[iTermHotKeyController sharedInstance] profileHotKeyForWindowController:self];
                 if (!profileHotkey.rollingIn && profileHotkey.windowController.weaklyReferencedObject == self) {
@@ -14734,6 +14761,7 @@ static BOOL iTermApproximatelyEqualRects(NSRect lhs, NSRect rhs, double epsilon)
             PtyLog(@"window not initialized, is fullscreen, or is being restored. Stack:\n%@", [NSThread callStackSymbols]);
         }
         if (!openInBackground &&
+            !self.isAppDocked &&
             (_automaticallyOrderFrontNewTabs || self.tabs.count == 1)) {
             // A background tab (automaticallyOrderFrontNewTabs == NO), or a tab
             // the caller asked to open in the background, should not become the
@@ -16406,6 +16434,11 @@ typedef NS_ENUM(NSUInteger, iTermBroadcastCommand) {
         return NO;
     }
     if (![self windowRestorationEnabled]) {
+        [[self ptyWindow] setRestoreState:nil];
+        return NO;
+    }
+    if (self.isAppDocked) {
+        // Recreated by its dock controller when its target app's window appears.
         [[self ptyWindow] setRestoreState:nil];
         return NO;
     }

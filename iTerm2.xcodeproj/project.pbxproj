@@ -7,6 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4496968807BC5AFF5CC5254C /* iTermLuaLiteralParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77F3E07C88DF26294FE78F42 /* iTermLuaLiteralParser.swift */; };
+		9438B57A125E5831D1E933A4 /* iTermAppDockLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 965E1DDE2DEF804020D1406F /* iTermAppDockLayout.swift */; };
+		06CCA8CF83FEE69E4E62E2B9 /* iTermElvUIChatPanelReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19F50B8FDAE3894AE6ABB208 /* iTermElvUIChatPanelReader.swift */; };
+		CC40FA56F7CEEBF63A7071C2 /* iTermAppDockSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 777AE45190C383AFFC878E3A /* iTermAppDockSettings.swift */; };
+		C92005FC367CB43A2AA83FC9 /* iTermAppDockVisibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19018BFD25CA033B87451B32 /* iTermAppDockVisibility.swift */; };
+		3A9E8894C42852C13066A87B /* iTermAppDockTargetTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = A945A5FE18C9F999FDAD588F /* iTermAppDockTargetTracker.swift */; };
+		A4F85D6902F92D37DF381BB1 /* iTermAppDockChrome.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8C7DC0D56289A90C8243D34 /* iTermAppDockChrome.swift */; };
+		3EC21EE75759BFCA38FFA752 /* iTermAppDockController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96331143FBA9B68DEDA8CD22 /* iTermAppDockController.swift */; };
+		BE2D2F7C0A9BD67E2EA9F09A /* iTermAppDockManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 914BB03D98A34D4CF4486398 /* iTermAppDockManager.swift */; };
+		7FC6E26351DF01D2788FFB75 /* iTermAppDockHotKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 64B6A150F670F2479053F0F4 /* iTermAppDockHotKey.m */; };
+		045FA89E009DF45CBDCBAA67 /* iTermTrueColorRemap.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE6921B44D2C2B687E788E9C /* iTermTrueColorRemap.swift */; };
 		CBC96459BD6FC8896785A3D9 /* TmuxWorkgroupPeerCreation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FA61C02D50EE6E66768FE0C /* TmuxWorkgroupPeerCreation.swift */; };
 		3EF33423CA26E1A5D858D1C9 /* TmuxWorkgroupAdoption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD54BF2A45695A8C76271D5 /* TmuxWorkgroupAdoption.swift */; };
 		40063C16D73D3B917B920C9B /* FramerPaneStrandedFinder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 704E93B8A70AA0106E558871 /* FramerPaneStrandedFinder.swift */; };
@@ -5158,6 +5169,18 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		77F3E07C88DF26294FE78F42 /* iTermLuaLiteralParser.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermLuaLiteralParser.swift; sourceTree = "<group>"; };
+		965E1DDE2DEF804020D1406F /* iTermAppDockLayout.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermAppDockLayout.swift; sourceTree = "<group>"; };
+		19F50B8FDAE3894AE6ABB208 /* iTermElvUIChatPanelReader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermElvUIChatPanelReader.swift; sourceTree = "<group>"; };
+		777AE45190C383AFFC878E3A /* iTermAppDockSettings.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermAppDockSettings.swift; sourceTree = "<group>"; };
+		19018BFD25CA033B87451B32 /* iTermAppDockVisibility.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermAppDockVisibility.swift; sourceTree = "<group>"; };
+		A945A5FE18C9F999FDAD588F /* iTermAppDockTargetTracker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermAppDockTargetTracker.swift; sourceTree = "<group>"; };
+		C8C7DC0D56289A90C8243D34 /* iTermAppDockChrome.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermAppDockChrome.swift; sourceTree = "<group>"; };
+		96331143FBA9B68DEDA8CD22 /* iTermAppDockController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermAppDockController.swift; sourceTree = "<group>"; };
+		914BB03D98A34D4CF4486398 /* iTermAppDockManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermAppDockManager.swift; sourceTree = "<group>"; };
+		9B406596DB802BFAC8B90337 /* iTermAppDockHotKey.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = iTermAppDockHotKey.h; sourceTree = "<group>"; };
+		64B6A150F670F2479053F0F4 /* iTermAppDockHotKey.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = iTermAppDockHotKey.m; sourceTree = "<group>"; };
+		EE6921B44D2C2B687E788E9C /* iTermTrueColorRemap.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermTrueColorRemap.swift; sourceTree = "<group>"; };
 		413B31365A66C69AAB923889 /* BashWordSplitter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BashWordSplitter.swift; sourceTree = "<group>"; };
 		F7F500F98D6607037DCEB270 /* iTermFloatingPaneView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermFloatingPaneView.swift; sourceTree = "<group>"; };
 		F87F998134B918DB629CE574 /* iTermProfileReadRecorder.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = iTermProfileReadRecorder.m; sourceTree = "<group>"; };
@@ -9366,6 +9389,25 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		EF344A2EEF886D457167F811 /* AppDock */ = {
+			isa = PBXGroup;
+			children = (
+				77F3E07C88DF26294FE78F42 /* iTermLuaLiteralParser.swift */,
+				965E1DDE2DEF804020D1406F /* iTermAppDockLayout.swift */,
+				19F50B8FDAE3894AE6ABB208 /* iTermElvUIChatPanelReader.swift */,
+				777AE45190C383AFFC878E3A /* iTermAppDockSettings.swift */,
+				19018BFD25CA033B87451B32 /* iTermAppDockVisibility.swift */,
+				A945A5FE18C9F999FDAD588F /* iTermAppDockTargetTracker.swift */,
+				C8C7DC0D56289A90C8243D34 /* iTermAppDockChrome.swift */,
+				96331143FBA9B68DEDA8CD22 /* iTermAppDockController.swift */,
+				914BB03D98A34D4CF4486398 /* iTermAppDockManager.swift */,
+				9B406596DB802BFAC8B90337 /* iTermAppDockHotKey.h */,
+				64B6A150F670F2479053F0F4 /* iTermAppDockHotKey.m */,
+				EE6921B44D2C2B687E788E9C /* iTermTrueColorRemap.swift */,
+			);
+			path = AppDock;
+			sourceTree = "<group>";
+		};
 		CB8346FD2E66E07964DE2CCD /* FloatingPanes */ = {
 			isa = PBXGroup;
 			children = (
@@ -9457,6 +9499,7 @@
 				A6B150022F985CA2006C7417 /* FileTypes */,
 				A6DC0A3A2F9852270071E6A1 /* FixBrokenAppleCrap */,
 				CB8346FD2E66E07964DE2CCD /* FloatingPanes */,
+				EF344A2EEF886D457167F811 /* AppDock */,
 				A672CC902F984B5300EAC0FB /* FocusFollowsMouse */,
 				A6CD8B4C2F983F89003EA0C1 /* Fonts */,
 				A6B14FFF2F985BF5006C7417 /* Formatting */,
@@ -20451,6 +20494,17 @@
 				F639888C586AAEB1D3D93A3F /* iTermWeakObserverList.swift in Sources */,
 				3B7DA5807C8D054592F05EEC /* iTermInstanceLock.swift in Sources */,
 				93192814C6B3391E62C3E35F /* FloatingPaneGeometry.swift in Sources */,
+				4496968807BC5AFF5CC5254C /* iTermLuaLiteralParser.swift in Sources */,
+				9438B57A125E5831D1E933A4 /* iTermAppDockLayout.swift in Sources */,
+				06CCA8CF83FEE69E4E62E2B9 /* iTermElvUIChatPanelReader.swift in Sources */,
+				CC40FA56F7CEEBF63A7071C2 /* iTermAppDockSettings.swift in Sources */,
+				C92005FC367CB43A2AA83FC9 /* iTermAppDockVisibility.swift in Sources */,
+				3A9E8894C42852C13066A87B /* iTermAppDockTargetTracker.swift in Sources */,
+				A4F85D6902F92D37DF381BB1 /* iTermAppDockChrome.swift in Sources */,
+				3EC21EE75759BFCA38FFA752 /* iTermAppDockController.swift in Sources */,
+				BE2D2F7C0A9BD67E2EA9F09A /* iTermAppDockManager.swift in Sources */,
+				7FC6E26351DF01D2788FFB75 /* iTermAppDockHotKey.m in Sources */,
+				045FA89E009DF45CBDCBAA67 /* iTermTrueColorRemap.swift in Sources */,
 				9D0D14C1945083235F5403E0 /* FloatingPaneLayout.swift in Sources */,
 				E51022C4CA99B9A7D4D73476 /* FloatingPaneBuiltInFunctions.swift in Sources */,
 				855352C7250CEC10AF17E728 /* TmuxJSONLayoutParser.swift in Sources */,

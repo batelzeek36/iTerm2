@@ -630,6 +630,7 @@ static BOOL sOSC7DisabledWarningShown;
         [self movePromptUnderComposerIfNeeded];
     }
     _terminal.terminfoValues = config.terminfoValues;
+    _terminal.trueColorRemap = config.trueColorRemap;
     _terminal.output.optionIsMetaForSpecialKeys = config.optionIsMetaForSpecialChars;
     _alertOnNextMark = config.alertOnNextMark;
     if (!_triggerEvaluator.sessionID) {

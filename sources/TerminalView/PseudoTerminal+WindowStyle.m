@@ -154,7 +154,7 @@ iTermWindowType iTermWindowTypeNormalized(iTermWindowType windowType) {
         [_titlebarAccessoryNanny updateIfNeeded];
     }
 
-    const BOOL panel = (hotkeyWindowType == iTermHotkeyWindowTypeFloatingPanel) || (windowType == WINDOW_TYPE_ACCESSORY);
+    const BOOL panel = (hotkeyWindowType == iTermHotkeyWindowTypeFloatingPanel) || (windowType == WINDOW_TYPE_ACCESSORY) || self.isAppDocked;
     const BOOL compact = [PseudoTerminal windowType:windowType shouldBeCompactWithSavedWindowType:savedWindowType];
     Class windowClass;
     if (panel) {
@@ -173,6 +173,9 @@ iTermWindowType iTermWindowTypeNormalized(iTermWindowType windowType) {
     NSWindowStyleMask styleMask = [PseudoTerminal styleMaskForWindowType:windowTypeForStyleMask
                                                          savedWindowType:savedWindowType
                                                         hotkeyWindowType:hotkeyWindowType];
+    if (self.isAppDocked) {
+        styleMask = iTermAppDockWindowMarker.styleMask;
+    }
     const BOOL defer = (hotkeyWindowType != iTermHotkeyWindowTypeNone);
     NSWindow<PTYWindow> *myWindow = [[windowClass alloc] initWithContentRect:initialFrame
                                                                    styleMask:styleMask
@@ -194,7 +197,7 @@ iTermWindowType iTermWindowTypeNormalized(iTermWindowType windowType) {
         // monitor.
         [myWindow setFrame:initialFrame display:NO];
     }
-    myWindow.movable = [self.class windowTypeIsMovable:windowType];
+    myWindow.movable = [self.class windowTypeIsMovable:windowType] && !self.isAppDocked;
 
     [self updateForTransparency:(NSWindow<PTYWindow> *)myWindow];
     [self updateTitlebarSeparatorStyle];
@@ -1194,6 +1197,9 @@ BOOL iTermWindowTypeIsCompact(iTermWindowType windowType) {
 }
 
 - (NSWindowStyleMask)styleMask {
+    if (self.isAppDocked) {
+        return iTermAppDockWindowMarker.styleMask;
+    }
     NSWindowStyleMask styleMask = [PseudoTerminal styleMaskForWindowType:self.windowType
                                                          savedWindowType:self.savedWindowType
                                                         hotkeyWindowType:self.hotkeyWindowType];
