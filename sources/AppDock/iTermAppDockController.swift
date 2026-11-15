@@ -246,6 +246,9 @@ final class AppDockController: NSObject {
         iTermController.sharedInstance()?.addTerminalWindow(newTerm)
         term = newTerm
         observeWindow(window)
+        // Put the window in its slot before the session starts, so the program's first grid is
+        // the panel's (only the font change follows, once the session exists).
+        applyGeometry()
         DLog("App dock: created window \(window) for \(settings.guid)")
         iTermSessionLauncher.launchBookmark(profile,
                                             in: newTerm,
