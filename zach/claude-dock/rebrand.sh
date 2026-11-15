@@ -10,6 +10,9 @@
 #     defaults, private defaults, Application Support, ~/.config folder and sockets), Sparkle's
 #     automatic checks off. No URL schemes, document types or Services: Claude Dock never takes
 #     ssh:, folders, scripts or iTerm2 files from the main iTerm2.
+#   - Icon: its own (icon/ClaudeDock.icns, drawn from icon/claude-dock-icon.svg by
+#     icon/make-icns.py): CFBundleIconFile = ClaudeDock, and CFBundleIconName (iTerm2's icon in
+#     Assets.car, which macOS would prefer) removed.
 #   - Entitlements: the app group named for the main iTerm2 is dropped (nothing uses it).
 #   - Signature: the outer app is re-signed with Zach's Developer ID, hardened runtime, as
 #     zach/build.sh signs the build. Nested code (frameworks, XPC services, helpers, Sparkle) keeps
@@ -65,6 +68,11 @@ PLIST=$APP/Contents/Info.plist
 # Main executable: its own name, so nothing that looks for iTerm2 by process name finds it.
 mv "$APP/Contents/MacOS/iTerm2" "$APP/Contents/MacOS/$EXECUTABLE"
 
+# Its own icon, before signing (resources are sealed by the signature).
+ICON=$HERE/icon/ClaudeDock.icns
+[ -s "$ICON" ] || die "missing $ICON (zach/claude-dock/icon/make-icns.py makes it)"
+cp "$ICON" "$APP/Contents/Resources/ClaudeDock.icns"
+
 plist_set() {   # key type value: set, or add when missing
     $PB -c "Set :$1 $3" "$PLIST" 2>/dev/null || $PB -c "Add :$1 $2 $3" "$PLIST"
 }
@@ -74,6 +82,8 @@ plist_set CFBundleName string "$APP_NAME"
 plist_set CFBundleDisplayName string "$APP_NAME"
 plist_set CFBundleExecutable string "$EXECUTABLE"
 plist_set ZachForkSettingsSuite string "$SUITE"
+plist_set CFBundleIconFile string ClaudeDock
+plist_delete CFBundleIconName
 plist_set SUEnableAutomaticChecks bool false
 plist_set SUAutomaticallyUpdate bool false
 plist_set SUAllowsAutomaticUpdates bool false
@@ -109,6 +119,8 @@ info=$(codesign -dv "$APP" 2>&1)
 [ "$(sed -n 's/^TeamIdentifier=//p' <<<"$info")" = "$TEAM" ] || die "signed team is not $TEAM"
 grep -q "flags=.*runtime" <<<"$info" || die "hardened runtime flag missing"
 [ "$($PB -c 'Print :CFBundleIdentifier' "$PLIST")" = "$BUNDLE_ID" ] || die "Info.plist bundle id was not set"
+[ "$($PB -c 'Print :CFBundleIconFile' "$PLIST")" = ClaudeDock ] && [ -s "$APP/Contents/Resources/ClaudeDock.icns" ] \
+    && ! $PB -c 'Print :CFBundleIconName' "$PLIST" >/dev/null 2>&1 || die "the icon was not set"
 if codesign -d --entitlements - --xml "$APP" 2>/dev/null | grep -q application-groups; then
     die "the app group entitlement is still present"
 fi

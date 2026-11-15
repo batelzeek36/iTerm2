@@ -2,9 +2,14 @@
 """Writes the "Claude over WoW" dynamic profile: a Claude Code panel docked in World of
 Warcraft's ElvUI right-chat slot (fork feature sources/AppDock, see zach/README.md).
 
-    zach/profiles/claude-over-wow.py            write ~/Library/Application Support/iTerm2/DynamicProfiles/claude-over-wow.json
+    zach/profiles/claude-over-wow.py            write ~/Library/Application Support/ClaudeDock/DynamicProfiles/claude-over-wow.json
     zach/profiles/claude-over-wow.py --test D   write a copy for a -suite test instance into D, running a
                                                 color replay instead of claude, on Ctrl-Opt-Cmd-J
+
+The panel runs in Claude Dock (zach/claude-dock), its own app, never in the main iTerm2: Claude
+Dock reads dynamic profiles from its suite's Application Support folder (the suite name comes
+from zach/claude-dock/claude-dock.conf). The main iTerm2 must not have this profile: it would
+fight Claude Dock for the hotkey.
 
 The look is the approved comp of 2026-11-14 (wow-forever-addons/mac/claude-overlay-comp,
 mode 1 "Chat dock"): violet text #cdb8ff, gold accents #f3cd5a, near-black backdrop at 60%.
@@ -12,6 +17,8 @@ mode 1 "Chat dock"): violet text #cdb8ff, gold accents #f3cd5a, near-black backd
 import json
 import os
 import sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
 
 WOW = "/Applications/World of Warcraft/_forever_"
 ELVUI = WOW + "/WTF/Account/809277904#1/SavedVariables/ElvUI.lua"
@@ -170,12 +177,24 @@ def profile(test):
         p["HotKey Characters Ignoring Modifiers"] = "j"
     return p
 
+def claude_dock_suite():
+    """Claude Dock's settings suite, which names its Application Support folder."""
+    path = os.path.join(HERE, "..", "claude-dock", "claude-dock.conf")
+    with open(path) as f:
+        for line in f:
+            line = line.strip()
+            if line.startswith("SUITE="):
+                suite = line.split("=", 1)[1].strip().strip('"')
+                if suite.isalnum():
+                    return suite
+    sys.exit("claude-over-wow: no valid SUITE in %s" % os.path.normpath(path))
+
 def main():
     if len(sys.argv) == 3 and sys.argv[1] == "--test":
         out_dir = sys.argv[2]
         test = {"command": os.path.join(out_dir, "..", "replay.sh")}
     elif len(sys.argv) == 1:
-        out_dir = os.path.expanduser("~/Library/Application Support/iTerm2/DynamicProfiles")
+        out_dir = os.path.expanduser("~/Library/Application Support/%s/DynamicProfiles" % claude_dock_suite())
         test = None
     else:
         sys.exit(__doc__)
