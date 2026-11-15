@@ -76,7 +76,15 @@ if ! git -c user.name="Zach Bates" -c user.email="batelzeek@gmail.com" \
     notify "our edits conflict with upstream $tag; still running the previous build (log: $LOG)"
     exit 2
 fi
-git submodule update --init --recursive --quiet
+# Start from clean submodules before moving them: the previous build leaves outputs inside them
+# (NMSSH's prebuilt libssl.a and friends), and a nightly that bumps such a submodule makes
+# `submodule update` refuse to check it out (11-14 04:00: "Your local changes ... would be
+# overwritten by checkout", the run died without a notification).
+git submodule foreach --quiet --recursive 'git reset --quiet --hard && git clean --quiet -fdx'
+if ! git submodule update --init --recursive --quiet; then
+    notify "submodule checkout for $tag failed; still running the previous build (log: $LOG)"
+    exit 5
+fi
 
 # Native dependencies (OpenSSL, libsixel, libgit2, Sparkle, ...) are built in upstream's
 # sandbox, the same as `make paranoid-deps` minus sfsymbolenum: that step regenerates
@@ -92,8 +100,6 @@ make_deps() {
 # upstream's Xcode), and the Xcode project refuses to build unless last-xcode-version matches
 # the Xcode in use.
 echo "building native dependencies: ${deps_targets[*]}"
-# Start from clean submodules (a previous build leaves outputs inside them).
-git submodule foreach --quiet --recursive 'git reset --quiet --hard && git clean --quiet -fdx'
 tools/check-submodule-cleanliness
 # The retry reruns make in place, keeping binaries Santa has approved by now.
 if ! retry make_deps; then
