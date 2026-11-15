@@ -126,8 +126,8 @@ typedef NS_OPTIONS(int, VT100TerminalKeyReportingFlags) {
 
 // Values are string, number, or NSNull
 @property(nonatomic, copy) NSDictionary<NSString *, id> *terminfoValues;
-// Zach's fork: 24-bit foreground colors set by SGR are replaced through this map (packed
-// 0xRRGGBB -> 0xRRGGBB), from the profile's "True Color Remap".
+// Zach's fork: 24-bit foreground and background colors set by SGR are replaced through this
+// map (packed 0xRRGGBB -> 0xRRGGBB), from the profile's "True Color Remap".
 @property(nonatomic, copy) NSDictionary<NSNumber *, NSNumber *> *trueColorRemap;
 @property(nonatomic) BOOL wantsDidExecuteCallback;
 @property(nonatomic, copy) NSString *currentBlockIDList;

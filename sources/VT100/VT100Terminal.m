@@ -204,6 +204,10 @@ typedef struct {
 @end
 
 @implementation VT100Terminal {
+    // Zach's fork: answers of the True Color Remap's nearest-color fallback, packed color ->
+    // replacement (NSNull when none), so an animated gradient is looked up once per color.
+    NSMutableDictionary<NSNumber *, id> *_trueColorRemapCache;
+
     // In FinalTerm command mode (user is at the prompt typing a command).
     BOOL inCommand_;
 
@@ -1294,28 +1298,55 @@ static const int kMaxScreenRows = 4096;
                     break;
             }
         }
-        [self remapTrueColorForeground];
+        [self remapTrueColors];
     }
     [self updateDefaultChar];
 }
 
-// Zach's fork: a profile can swap an app's 24-bit text colors for its own (an app-docked
-// panel turns Claude Code's orange into its gold).
-- (void)remapTrueColorForeground {
-    if (_trueColorRemap.count == 0 || graphicRendition_.fgColorMode != ColorMode24bit) {
+// Zach's fork: a profile can swap an app's 24-bit colors for its own, as text and as
+// background (an app-docked panel turns Claude Code's orange into its gold and its grey
+// message background into a violet one).
+- (void)remapTrueColors {
+    if (_trueColorRemap.count == 0) {
         return;
     }
-    const int packed = ((graphicRendition_.fgColorCode & 0xff) << 16) |
-                       ((graphicRendition_.fgGreen & 0xff) << 8) |
-                       (graphicRendition_.fgBlue & 0xff);
+    if (graphicRendition_.fgColorMode == ColorMode24bit) {
+        [self remapRed:&graphicRendition_.fgColorCode green:&graphicRendition_.fgGreen blue:&graphicRendition_.fgBlue];
+    }
+    if (graphicRendition_.bgColorMode == ColorMode24bit) {
+        [self remapRed:&graphicRendition_.bgColorCode green:&graphicRendition_.bgGreen blue:&graphicRendition_.bgBlue];
+    }
+}
+
+- (void)setTrueColorRemap:(NSDictionary<NSNumber *, NSNumber *> *)trueColorRemap {
+    _trueColorRemap = [trueColorRemap copy];
+    _trueColorRemapCache = nil;
+}
+
+- (void)remapRed:(int *)red green:(int *)green blue:(int *)blue {
+    const int packed = ((*red & 0xff) << 16) | ((*green & 0xff) << 8) | (*blue & 0xff);
     NSNumber *replacement = _trueColorRemap[@(packed)];
+    if (!replacement && _trueColorRemap[iTermTrueColorRemap.toleranceKey]) {
+        id cached = _trueColorRemapCache[@(packed)];
+        if (!cached) {
+            if (!_trueColorRemapCache) {
+                _trueColorRemapCache = [NSMutableDictionary dictionary];
+            }
+            if (_trueColorRemapCache.count > 4096) {
+                [_trueColorRemapCache removeAllObjects];
+            }
+            cached = [iTermTrueColorRemap replacementFor:packed in:_trueColorRemap] ?: [NSNull null];
+            _trueColorRemapCache[@(packed)] = cached;
+        }
+        replacement = [cached isKindOfClass:[NSNumber class]] ? cached : nil;
+    }
     if (!replacement) {
         return;
     }
     const int value = replacement.intValue;
-    graphicRendition_.fgColorCode = (value >> 16) & 0xff;
-    graphicRendition_.fgGreen = (value >> 8) & 0xff;
-    graphicRendition_.fgBlue = value & 0xff;
+    *red = (value >> 16) & 0xff;
+    *green = (value >> 8) & 0xff;
+    *blue = value & 0xff;
 }
 
 // See comment on executeXtermSetPalette for details of the control sequence.
