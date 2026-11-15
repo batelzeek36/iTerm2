@@ -155,7 +155,9 @@ iTermWindowType iTermWindowTypeNormalized(iTermWindowType windowType) {
     }
 
     const BOOL panel = (hotkeyWindowType == iTermHotkeyWindowTypeFloatingPanel) || (windowType == WINDOW_TYPE_ACCESSORY) || self.isAppDocked;
-    const BOOL compact = [PseudoTerminal windowType:windowType shouldBeCompactWithSavedWindowType:savedWindowType];
+    // Zach's fork: an app-docked panel is borderless; a compact window's theme frame would keep
+    // a title bar's height of its content area empty (sources/AppDock).
+    const BOOL compact = [PseudoTerminal windowType:windowType shouldBeCompactWithSavedWindowType:savedWindowType] && !self.isAppDocked;
     Class windowClass;
     if (panel) {
         if (compact) {

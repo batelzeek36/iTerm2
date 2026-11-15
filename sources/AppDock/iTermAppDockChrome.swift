@@ -7,9 +7,11 @@
 //  an ElvUI chat tab ("Claude" in gold, a muted subtitle, the hotkey on the right). No title
 //  bar, no shadow, no rounded corners.
 //
-//  It is a separate borderless panel laid over the terminal window. Its middle is fully
-//  transparent, so clicks there fall through to the terminal; a click on the header focuses
-//  the terminal.
+//  Two borderless panels laid over the terminal window:
+//    - the edge panel covers the whole panel and draws the edges; it never takes a click, so
+//      a click anywhere outside the header reaches whatever is under it (the game, unless the
+//      terminal has the keyboard and takes the click itself);
+//    - the header panel covers only the header strip; a click there focuses the terminal.
 //
 
 import AppKit
@@ -24,11 +26,9 @@ struct AppDockChromeStyle: Equatable {
     var backdrop: AppDockRGBA
 }
 
+// A borderless, non-activating, shadowless child panel that is never key or main.
 final class AppDockChromePanel: NSPanel {
-    let chromeView: AppDockChromeView
-
-    init() {
-        chromeView = AppDockChromeView(frame: NSRect(x: 0, y: 0, width: 100, height: 100))
+    init(contentView view: NSView, takesClicks: Bool) {
         super.init(contentRect: NSRect(x: 0, y: 0, width: 100, height: 100),
                    styleMask: [.borderless, .nonactivatingPanel],
                    backing: .buffered,
@@ -41,15 +41,58 @@ final class AppDockChromePanel: NSPanel {
         isMovable = false
         isExcludedFromWindowsMenu = true
         animationBehavior = .none
+        ignoresMouseEvents = !takesClicks
         collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .ignoresCycle, .transient]
-        contentView = chromeView
+        contentView = view
     }
 
     override var canBecomeKey: Bool { false }
     override var canBecomeMain: Bool { false }
 }
 
-final class AppDockChromeView: NSView {
+// The outer edge, the faint inner highlight and the line under the header.
+final class AppDockEdgeView: NSView {
+    var header: AppDockHeaderMetrics? {
+        didSet {
+            if header != oldValue {
+                needsDisplay = true
+            }
+        }
+    }
+
+    override var isOpaque: Bool { false }
+    override var isFlipped: Bool { false }
+
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        return nil
+    }
+
+    override func draw(_ dirtyRect: NSRect) {
+        NSColor.clear.set()
+        bounds.fill(using: .copy)
+        guard let header else {
+            return
+        }
+        let b = AppDockGeometry.borderWidth
+        let headerBottom = bounds.maxY - b - header.height
+        NSColor.black.set()
+        NSRect(x: bounds.minX + b, y: headerBottom - b, width: bounds.width - 2 * b, height: b).fill()
+        Self.strokeInside(bounds, width: b, color: .black)
+        Self.strokeInside(bounds.insetBy(dx: b, dy: b), width: b, color: NSColor(white: 1, alpha: 0.07))
+    }
+
+    private static func strokeInside(_ rect: NSRect, width: CGFloat, color: NSColor) {
+        color.set()
+        NSRect(x: rect.minX, y: rect.minY, width: rect.width, height: width).fill(using: .sourceOver)
+        NSRect(x: rect.minX, y: rect.maxY - width, width: rect.width, height: width).fill(using: .sourceOver)
+        NSRect(x: rect.minX, y: rect.minY + width, width: width, height: rect.height - 2 * width).fill(using: .sourceOver)
+        NSRect(x: rect.maxX - width, y: rect.minY + width, width: width, height: rect.height - 2 * width).fill(using: .sourceOver)
+    }
+}
+
+// The header strip: the panel backdrop with the tab's tint over it, a gold dot and title, a
+// muted subtitle and the hotkey hint. Clicking it focuses the terminal.
+final class AppDockHeaderView: NSView {
     var style: AppDockChromeStyle? {
         didSet {
             if style != oldValue {
@@ -77,53 +120,17 @@ final class AppDockChromeView: NSView {
         onClick?()
     }
 
-    // Only the header and the edges take clicks; the transparent middle never does.
-    override func hitTest(_ point: NSPoint) -> NSView? {
-        guard let header else {
-            return nil
-        }
-        let local = convert(point, from: superview)
-        let b = AppDockGeometry.borderWidth
-        let headerBottom = bounds.maxY - b - header.height - b
-        let inMiddle = local.x > bounds.minX + 2 * b && local.x < bounds.maxX - 2 * b &&
-            local.y > bounds.minY + 2 * b && local.y < headerBottom
-        return inMiddle ? nil : super.hitTest(point)
-    }
-
     override func draw(_ dirtyRect: NSRect) {
         NSColor.clear.set()
         bounds.fill(using: .copy)
         guard let style, let header else {
             return
         }
-        let b = AppDockGeometry.borderWidth
-        let headerRect = NSRect(x: bounds.minX + b,
-                                y: bounds.maxY - b - header.height,
-                                width: bounds.width - 2 * b,
-                                height: header.height)
-        // Header strip: the panel backdrop, then the tab's own tint over it (as in the comp,
-        // where the tab sits inside the panel).
         style.backdrop.nsColor.set()
-        headerRect.fill(using: .sourceOver)
+        bounds.fill(using: .sourceOver)
         style.colors.headerBackground.nsColor.set()
-        headerRect.fill(using: .sourceOver)
-
-        // Black line under the header, then the outer black edge.
-        NSColor.black.set()
-        NSRect(x: bounds.minX + b, y: headerRect.minY - b, width: bounds.width - 2 * b, height: b).fill()
-        strokeInside(bounds, width: b, color: .black)
-        // The faint inner highlight, 1 pt inside the edge.
-        strokeInside(bounds.insetBy(dx: b, dy: b), width: b, color: NSColor(white: 1, alpha: 0.07))
-
-        drawHeaderText(in: headerRect, style: style, header: header)
-    }
-
-    private func strokeInside(_ rect: NSRect, width: CGFloat, color: NSColor) {
-        color.set()
-        NSRect(x: rect.minX, y: rect.minY, width: rect.width, height: width).fill(using: .sourceOver)
-        NSRect(x: rect.minX, y: rect.maxY - width, width: rect.width, height: width).fill(using: .sourceOver)
-        NSRect(x: rect.minX, y: rect.minY + width, width: width, height: rect.height - 2 * width).fill(using: .sourceOver)
-        NSRect(x: rect.maxX - width, y: rect.minY + width, width: width, height: rect.height - 2 * width).fill(using: .sourceOver)
+        bounds.fill(using: .sourceOver)
+        drawText(in: bounds, style: style, header: header)
     }
 
     private static func headerFont(size: CGFloat) -> NSFont {
@@ -135,7 +142,7 @@ final class AppDockChromeView: NSView {
         return NSFont(descriptor: condensed, size: size) ?? system
     }
 
-    private func drawHeaderText(in rect: NSRect, style: AppDockChromeStyle, header: AppDockHeaderMetrics) {
+    private func drawText(in rect: NSRect, style: AppDockChromeStyle, header: AppDockHeaderMetrics) {
         let font = Self.headerFont(size: header.fontSize)
         let hintFont = Self.headerFont(size: header.fontSize * 0.9)
         let baselineY = rect.midY - (font.ascender + font.descender) / 2
@@ -172,6 +179,63 @@ final class AppDockChromeView: NSView {
         }
         if hintWidth > 0, hintX > x {
             hint.draw(at: NSPoint(x: hintX, y: baselineY + hintFont.descender))
+        }
+    }
+}
+
+// The two chrome panels of one docked terminal, moved and shown together.
+final class AppDockChrome {
+    let edgeView = AppDockEdgeView(frame: NSRect(x: 0, y: 0, width: 100, height: 100))
+    let headerView = AppDockHeaderView(frame: NSRect(x: 0, y: 0, width: 100, height: 100))
+    private let edgePanel: AppDockChromePanel
+    private let headerPanel: AppDockChromePanel
+
+    init() {
+        edgePanel = AppDockChromePanel(contentView: edgeView, takesClicks: false)
+        headerPanel = AppDockChromePanel(contentView: headerView, takesClicks: true)
+    }
+
+    var level: NSWindow.Level {
+        get { edgePanel.level }
+        set {
+            edgePanel.level = newValue
+            headerPanel.level = newValue
+        }
+    }
+
+    var isVisible: Bool {
+        return edgePanel.isVisible || headerPanel.isVisible
+    }
+
+    func apply(geometry g: AppDockGeometry, style: AppDockChromeStyle) {
+        if edgePanel.frame != g.panelFrame {
+            edgePanel.setFrame(g.panelFrame, display: true)
+        }
+        if headerPanel.frame != g.headerFrame {
+            headerPanel.setFrame(g.headerFrame, display: true)
+        }
+        edgeView.header = g.header
+        headerView.header = g.header
+        headerView.style = style
+    }
+
+    // Header first, then the edges above it, so the inner highlight runs over the header too.
+    func attach(to window: NSWindow) {
+        for panel in [headerPanel, edgePanel] {
+            if panel.parent !== window {
+                panel.parent?.removeChildWindow(panel)
+                window.addChildWindow(panel, ordered: .above)
+            }
+            if !panel.isVisible {
+                panel.orderFrontRegardless()
+            }
+        }
+    }
+
+    func detach() {
+        for panel in [edgePanel, headerPanel] {
+            panel.parent?.removeChildWindow(panel)
+            panel.orderOut(nil)
         }
     }
 }

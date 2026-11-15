@@ -12,7 +12,10 @@
 //                   active app, so its window keeps its place and the panel stays on top).
 //                   Panel focused: hand the keyboard back to the target app.
 //    Shift-H        hide the panel / show it again. The session keeps running while hidden.
-//    Click          clicking the panel focuses it; clicking the game focuses the game.
+//    Click          the panel is click-through while it does not have the keyboard, so
+//                   clicks (and scrolls) in its slot reach the game (bags open there); a
+//                   click on its header focuses it. With the keyboard, it takes clicks on
+//                   itself; clicking the game gives the keyboard back to the game.
 //
 
 import AppKit
@@ -23,7 +26,7 @@ final class AppDockController: NSObject {
     private var layoutFileDate: Date?
     private var tracker: AppDockTargetTracker
     private weak var term: PseudoTerminal?
-    private let chrome = AppDockChromePanel()
+    private let chrome = AppDockChrome()
     private var focusHotKey: iTermAppDockHotKey?
     private var visibilityHotKey: iTermAppDockHotKey?
     private var hotKeyHint = ""
@@ -44,7 +47,7 @@ final class AppDockController: NSObject {
         layout = settings.fallbackLayout
         tracker = AppDockTargetTracker(criteria: Self.criteria(settings))
         super.init()
-        chrome.chromeView.onClick = { [weak self] in
+        chrome.headerView.onClick = { [weak self] in
             self?.focusPanel()
         }
     }
@@ -194,7 +197,9 @@ final class AppDockController: NSObject {
             return
         }
         // A non-activating panel takes the keyboard without activating iTerm2, so the target
-        // app stays frontmost and nothing else of iTerm2's comes forward.
+        // app stays frontmost and nothing else of iTerm2's comes forward. It takes clicks only
+        // while it has the keyboard.
+        window.ignoresMouseEvents = !AppDockFocusPolicy.terminalTakesClicks(panelIsKey: true)
         window.makeKeyAndOrderFront(nil)
         if let responder = term.currentSession()?.mainResponder {
             window.makeFirstResponder(responder)
@@ -215,6 +220,7 @@ final class AppDockController: NSObject {
         // keyboard to its window (re-activating it makes sure its window is key again). The
         // panel then comes back without focus.
         detachChrome()
+        window.ignoresMouseEvents = !AppDockFocusPolicy.terminalTakesClicks(panelIsKey: false)
         window.orderOut(nil)
         tracker.runningApp?.activate(options: [])
         scheduleVisibilityUpdate()
@@ -246,6 +252,9 @@ final class AppDockController: NSObject {
         iTermController.sharedInstance()?.addTerminalWindow(newTerm)
         term = newTerm
         observeWindow(window)
+        // Put the window in its slot before the session starts, so the program's first grid is
+        // the panel's (only the font change follows, once the session exists).
+        applyGeometry()
         DLog("App dock: created window \(window) for \(settings.guid)")
         iTermSessionLauncher.launchBookmark(profile,
                                             in: newTerm,
@@ -273,6 +282,10 @@ final class AppDockController: NSObject {
         window.hasShadow = false
         window.animationBehavior = .none
         window.isRestorable = false
+        // Click-through until it is given the keyboard (hotkey or a click on the header): a
+        // click on whatever the game shows under the panel must reach the game and never
+        // hand the keyboard to the terminal.
+        window.ignoresMouseEvents = !AppDockFocusPolicy.terminalTakesClicks(panelIsKey: false)
         if let panel = window as? NSPanel {
             panel.becomesKeyOnlyIfNeeded = false
             panel.worksWhenModal = false
@@ -300,7 +313,9 @@ final class AppDockController: NSObject {
         stopObservingWindow()
         let center = NotificationCenter.default
         for name in [NSWindow.didBecomeKeyNotification, NSWindow.didResignKeyNotification] {
-            windowObservers.append(center.addObserver(forName: name, object: window, queue: .main) { [weak self] _ in
+            windowObservers.append(center.addObserver(forName: name, object: window, queue: .main) { [weak self] note in
+                let isKey = (name == NSWindow.didBecomeKeyNotification)
+                (note.object as? NSWindow)?.ignoresMouseEvents = !AppDockFocusPolicy.terminalTakesClicks(panelIsKey: isKey)
                 self?.scheduleVisibilityUpdate()
             })
         }
@@ -410,11 +425,7 @@ final class AppDockController: NSObject {
             window.setFrame(g.terminalFrame, display: true)
             applyingFrame = false
         }
-        if chrome.frame != g.panelFrame {
-            chrome.setFrame(g.panelFrame, display: true)
-        }
-        chrome.chromeView.header = g.header
-        chrome.chromeView.style = style()
+        chrome.apply(geometry: g, style: style())
     }
 
     private func applyFont(_ size: CGFloat) {
@@ -508,18 +519,11 @@ final class AppDockController: NSObject {
     }
 
     private func attachChrome(to window: NSWindow) {
-        if chrome.parent !== window {
-            chrome.parent?.removeChildWindow(chrome)
-            window.addChildWindow(chrome, ordered: .above)
-        }
-        if !chrome.isVisible {
-            chrome.orderFrontRegardless()
-        }
+        chrome.attach(to: window)
     }
 
     private func detachChrome() {
-        chrome.parent?.removeChildWindow(chrome)
-        chrome.orderOut(nil)
+        chrome.detach()
     }
 }
 

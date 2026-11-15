@@ -21,8 +21,15 @@ committed work gets built.
   - Hotkey (the profile's, Ctrl-Opt-Cmd-C): panel not focused = show it and give it the
     keyboard (WoW stays the active app; the panel is a non-activating panel). Panel focused
     = keyboard back to WoW, panel stays. Shift-Ctrl-Opt-Cmd-C = hide/show; the claude
-    session keeps running while hidden. Clicking the panel focuses it, clicking the game
-    focuses the game.
+    session keeps running while hidden.
+  - Clicks: until it has the keyboard the panel is click-through (the terminal window
+    ignores mouse events and the edges are a separate click-ignoring window), so clicks and
+    scrolls in its slot reach the game (a bag opened there) and never hand the keyboard to
+    Claude. Only the header takes a click: it focuses the panel. Focused, the terminal takes
+    its own clicks; clicking the game gives the keyboard back to the game.
+  - ZachPaladin's `/zdock` (wow-forever-addons, dock.lua) empties the slot on the game's
+    side: ElvUI's right chat hidden (its chat types join the main chat), its toggle parked,
+    tooltips above the slot; `/zdock off` undoes it.
   - Visible only while WoW is frontmost or the panel has the keyboard; gone with WoW's
     window (created when it first appears; if claude exits, the next hotkey press or WoW
     window makes a new session). Never restored by window restoration.
@@ -36,12 +43,17 @@ committed work gets built.
     iTerm2.
   - Profile keys are listed at the top of `sources/AppDock/iTermAppDockSettings.swift`.
     Upstream files touched (one-line hooks, all marked "Zach's fork"): PseudoTerminal.h/.m,
-    PseudoTerminal+WindowStyle.m, iTermApplicationDelegate.m, iTermAPIHelper.m,
+    PseudoTerminal+WindowStyle.m (also: a docked window is never a compact window, whose
+    theme frame left a title bar's height of the panel empty), iTermApplicationDelegate.m, iTermAPIHelper.m,
     iTermHotKeyProfileBindingController.m, the SharedARC bridging header.
 - **True Color Remap** (profile key `"True Color Remap": {"#d77757": "#f3cd5a", ...}`): 24-bit
-  foreground colors a program sets are swapped for the profile's. The WoW panel turns Claude
-  Code's orange into gold and its white into violet without touching Claude Code's theme.
-  Touches VT100Terminal, VT100ScreenConfiguration, VT100ScreenMutableState, PTYSession.
+  text and background colors a program sets are swapped for the profile's. The WoW panel
+  turns Claude Code's orange into gold, its white into violet, its grey past-prompt slab into
+  a violet one and its green/red diff lines into gold/plum, without touching Claude Code's
+  theme (map: `zach/profiles/claude-over-wow.py`, from Claude Code 2.1.325's dark theme; the
+  profile also has its own violet + gold ANSI palette for basic-color output such as the
+  status line). Touches VT100Terminal, VT100ScreenConfiguration, VT100ScreenMutableState,
+  PTYSession.
 - Build-time only (zach/build.sh, never committed to upstream files): nightly channel plist
   (nightly-only features on), update feeds pointed at a dead local address so a stock build
   can never install over ours, `keychain-access-groups` dropped (it needs George Nachman's

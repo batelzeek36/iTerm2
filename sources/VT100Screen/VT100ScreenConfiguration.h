@@ -65,7 +65,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) int maxScrollbackLines;
 @property (nonatomic, readonly) BOOL loggingEnabled;
 @property (nonatomic, copy, readonly) NSDictionary<NSString *, id> *terminfoValues;
-// Zach's fork: 24-bit foreground colors to replace, packed 0xRRGGBB -> 0xRRGGBB.
+// Zach's fork: 24-bit colors (text and background) to replace, packed 0xRRGGBB -> 0xRRGGBB.
 @property (nonatomic, copy, readonly) NSDictionary<NSNumber *, NSNumber *> *trueColorRemap;
 @property (nonatomic, readonly) BOOL alertOnNextMark;
 @property (nonatomic, readonly) double dimmingAmount;
