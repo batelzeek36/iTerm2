@@ -1738,6 +1738,8 @@ void TurnOnDebugLoggingAutomatically(void) {
     [iTermAppHotKeyProvider sharedInstance];
     (void)[iTermOpenQuicklyHotKeyProvider sharedInstance];
     [iTermHotKeyProfileBindingController sharedInstance];
+    // Zach's fork: panels docked to other apps' windows (sources/AppDock).
+    [iTermAppDockManager start];
 
     if ([[iTermModifierRemapper sharedInstance] isAnyModifierRemapped]) {
         // Use a brief delay so windows have a chance to open before the dialog is shown.
@@ -4342,7 +4344,7 @@ static iTermKeyEventReplayer *gReplayer;
 
 - (NSArray<NSWindow *> *)restorableStateWindows {
     return [[[iTermController sharedInstance] terminals] mapWithBlock:^id(PseudoTerminal *term) {
-        if (term.isHotKeyWindow) {
+        if (term.isHotKeyWindow || term.isAppDocked) {
             return nil;
         }
         return term.window;
