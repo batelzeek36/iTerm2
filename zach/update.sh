@@ -100,6 +100,8 @@ make_deps() {
 # upstream's Xcode), and the Xcode project refuses to build unless last-xcode-version matches
 # the Xcode in use.
 echo "building native dependencies: ${deps_targets[*]}"
+# Clean again after the checkout: a submodule that moved can leave files behind.
+git submodule foreach --quiet --recursive 'git reset --quiet --hard && git clean --quiet -fdx'
 tools/check-submodule-cleanliness
 # The retry reruns make in place, keeping binaries Santa has approved by now.
 if ! retry make_deps; then
