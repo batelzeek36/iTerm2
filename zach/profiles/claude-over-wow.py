@@ -126,7 +126,14 @@ def profile(test):
         "Dock To App Bundle ID": "com.blizzard.worldofwarcraft",
         "Dock To App Path": WOW + "/World of Warcraft.app",
         "Dock Window Title": "World of Warcraft",
-        "Dock ElvUI SavedVariables": ELVUI,
+        # TALL for now (Zach 11-15 9 PM: "it needs to be taller ... cover the rest of the blank area,
+        # or i cant read it"): ElvUI's right-chat slot (RightChatMover BOTTOMRIGHT -4,4, 472 wide,
+        # UI scale 0.63) stretched up from 259 to 560 units, which ends under the Questie tracker
+        # (~632 units up). With no "Dock ElvUI SavedVariables" the panel uses this layout. The
+        # mini/tall header button and dragging come with the next fork build; until then this
+        # entry is the switch: put back "Dock ElvUI SavedVariables": ELVUI for the old mini panel.
+        "Dock Layout": {"Point": "BOTTOMRIGHT", "Relative Point": "BOTTOMRIGHT", "X": -4, "Y": 4,
+                        "Width": 472, "Height": 560, "UI Scale": 0.63},
         "Dock ElvUI Panel": "RightChat",
         "Dock Header Title": "Claude",
         "Dock Header Subtitle": "wow-forever",
