@@ -32,8 +32,20 @@ echo "== $(date) fork update"
 
 source "${0:A:h}/xcode.sh"
 
+# During quiet hours (the 4 AM run; Zach lets this one build run then, 2026-11-15) a notice is a
+# silent banner: ping-zach plays a sound, which would land in his ears over the fan at night.
+# A flag whose text starts with "test" is quiet hours' sound-reset test, not a night.
+quiet_hours_on() {
+    local flag=$HOME/.claude/quiet-hours/active
+    [[ -f $flag && "$(<$flag)" != test* ]]
+}
 notify() {
     echo "NOTIFY: $1"
+    if quiet_hours_on; then
+        local text=${1//[\"\\]/}
+        osascript -e "display notification \"iTerm2 fork: ${text[1,180]}\" with title \"iTerm2 fork (quiet hours)\"" || true
+        return 0
+    fi
     [ -x "$PING" ] && "$PING" --mac "iTerm2 fork: $1" || true
 }
 

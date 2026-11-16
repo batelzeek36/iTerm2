@@ -101,8 +101,8 @@ committed work gets built.
 
 ## How updates work
 
-- `com.zach.iterm2-fork-update` (04:00 daily, and at load: login, `install.sh`, quiet hours'
-  `wake`) runs `run-update`, which runs `update.sh`: fetch upstream, take the
+- `com.zach.iterm2-fork-update` (04:00 daily, and at load: login, `install.sh`) runs
+  `run-update`, which runs `update.sh`: fetch upstream, take the
   newest `v*-nightly` tag, merge `zach` onto it in `~/Documents/iTerm2-builds/worktree`,
   build signed with Zach's Developer ID (team 76Q7685NR2), stage it in
   `~/Documents/iTerm2-builds/staged/`. The `zach` branch is never rewritten. A merge
@@ -111,9 +111,13 @@ committed work gets built.
 - Why `run-update` (11-12): a launchd job that starts `/bin/zsh` directly gets no access to
   `~/Documents`, so the 04:00 runs on 11-11 and 11-12 died with "can't open input file". The
   launcher is signed under its own identifier (`com.zach.iterm2-fork-update`), holds the
-  Documents grant (asked for once), and `update.sh` inherits it. It also skips the run while
-  quiet hours are on (no builds on the Mac at night); `wake` loads the job again, which
-  catches up.
+  Documents grant (asked for once), and `update.sh` inherits it.
+- Quiet hours (Zach, 2026-11-15: “i dont think an iterm2 nightly build is going to ram spotify
+  to the point of affecting playback”): the 4 AM run goes ahead during quiet hours, the one build
+  allowed then. Quiet hours (`~/Documents/quiet-hours`) keep this LaunchAgent loaded and never
+  stop its processes (`config.NIGHT_EXEMPT_WORK`); it runs at background QoS (efficiency cores),
+  Nice 10, low-priority I/O. During quiet hours its notices are silent banners (ping-zach plays a
+  sound). The swap agent stays paused until `wake`, so the night’s build installs in the morning.
 - Claude Dock rides the same run: after staging iTerm2, `update.sh` re-brands the build into
   `~/Documents/iTerm2-builds/staged-claude-dock/Claude Dock.app` (+ `BUILD_ID`). A failed
   re-brand never holds back iTerm2: one Mac notification per build, exit 6 at the end, and
