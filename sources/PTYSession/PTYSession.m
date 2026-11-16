@@ -173,9 +173,11 @@
 #import "iTermSetFindStringNotification.h"
 #import "iTermSharedImageStore.h"
 #import "iTermShellHistoryController.h"
+#import "iTermLSOF.h"
 #import "iTermShortcut.h"
 #import "iTermShortcutInputView.h"
 #import "iTermSlowOperationGateway.h"
+#import "iTermSyntheticConfParser.h"
 #import "iTermSnippetsModel.h"
 #import "iTermSoundPlayer.h"
 #import "iTermStandardKeyMapper.h"
@@ -1130,6 +1132,8 @@ typedef NS_ENUM(NSUInteger, PTYSessionTurdType) {
         }];
         _expect = [[iTermExpect alloc] initDry:YES];
         _eventTriggerEvaluator = [[iTermEventTriggerEvaluator alloc] initWithSessionDescription:_guid];
+        // The screen has no delegate to perform trigger actions until -setScreenSize:parent:.
+        [_eventTriggerEvaluator holdFiring];
         __weak VT100Screen *weakScreen = _screen;
         _eventTriggerEvaluator.fireTriggerHandler = ^(Trigger *trigger, NSArray<NSString *> *capturedStrings, BOOL useInterpolation) {
             [weakScreen fireEventTrigger:trigger capturedStrings:capturedStrings useInterpolation:useInterpolation];
@@ -3044,6 +3048,11 @@ ITERM_WEAKLY_REFERENCEABLE
 
     [self updateMetalDriver];
 
+    // Deliver event triggers that fired before the session was set up, such as a Variable
+    // Changed trigger on a tab variable that changed when a split pane joined its tab. This
+    // waits until the view, text view, grid size, terminal, and shell delegate are in place,
+    // since the held actions run now.
+    [_eventTriggerEvaluator resumeFiring];
     return YES;
 }
 
@@ -3572,8 +3581,10 @@ ITERM_WEAKLY_REFERENCEABLE
     }
 
     NSString *suiteName = [iTermUserDefaults customSuiteName];
-    if (suiteName) {
-        env[@"IT2_SUITE"] = suiteName;
+    // Clients use IT2_SUITE only to find this instance's Application Support folder.
+    NSString *suiteDirectoryName = [iTermUserDefaults customSuiteDirectoryName];
+    if (suiteDirectoryName) {
+        env[@"IT2_SUITE"] = suiteDirectoryName;
     }
 
     [PTYSession applyIT2AppPathTo:env
@@ -4248,6 +4259,7 @@ webViewConfiguration:(WKWebViewConfiguration *)webViewConfiguration
 // "restart", which is done by first calling revive and then replaceTerminatedShellWithNewInstance.
 - (void)terminate {
     RLog(@"terminate called from %@", [NSThread callStackSymbols]);
+    [self cancelRemoteCommandBecauseSessionEnded];
     // tmuxMode is cleared below, before observers are notified.
     const BOOL wasTmuxClient = (self.tmuxMode == TMUX_CLIENT);
     [self forgetAITitleState];
@@ -4347,6 +4359,9 @@ webViewConfiguration:(WKWebViewConfiguration *)webViewConfiguration
     [[NSNotificationCenter defaultCenter] postNotificationName:iTermSessionWillTerminateNotification
                                                         object:self
                                                       userInfo:@{ iTermSessionWillTerminateWasTmuxClientKey: @(wasTmuxClient) }];
+    // Session Ended triggers fired in -setExited: above. Removing this session changes its tab's
+    // variables, and so does closing the rest of the window, so stop observing them now.
+    [_eventTriggerEvaluator stopFiring];
     [_delegate removeSession:self];
 
     _screen.delegate = nil;
@@ -4511,6 +4526,7 @@ webViewConfiguration:(WKWebViewConfiguration *)webViewConfiguration
         _textview.delegate = self;
         _screen.terminalEnabled = YES;
         _screen.delegate = self;
+        [_eventTriggerEvaluator resumeFiring];
         if ([iTermAdvancedSettingsModel showLocationsInScrollbar] && [iTermAdvancedSettingsModel showMarksInScrollbar]) {
             _screen.intervalTreeObserver = self;
         }
@@ -5208,6 +5224,7 @@ webViewConfiguration:(WKWebViewConfiguration *)webViewConfiguration
     }
 
     RLog(@"  brokenPipe: set exited = YES");
+    [self cancelRemoteCommandBecauseSessionEnded];
     // This posts PTYSessionExitedDidChangeNotification, so the sleep-prevention coordinator stops
     // counting this dead-but-open pane as a Prevent Sleep requester.
     [self cleanUpAfterBrokenPipe];
@@ -6293,6 +6310,18 @@ webViewConfiguration:(WKWebViewConfiguration *)webViewConfiguration
     [self setBackgroundImagePath:_backgroundImageRotator.currentImage];
 }
 
+
+// A malformed profile (for example, a hand-edited or dynamic profile) can hold something other than
+// a color dictionary, and messaging it with -colorValueForKey: would throw.
+- (NSColor *)colorForKey:(NSString *)key inProfile:(Profile *)profile {
+    NSDictionary *dict = [NSDictionary castFrom:[iTermProfilePreferences objectForKey:key inProfile:profile]];
+    if (!dict) {
+        DLog(@"Profile value for %@ is not a color dictionary; using the default", key);
+        dict = [NSDictionary castFrom:[iTermProfilePreferences defaultObjectForKey:key]];
+    }
+    return [dict colorValueForKey:key];
+}
+
 - (void)loadColorsFromProfile:(Profile *)aDict {
     const BOOL dark = [NSApp effectiveAppearance].it_isDark;
     NSDictionary<NSNumber *, NSString *> *keyMap = [self colorTableForProfile:aDict darkMode:dark];
@@ -6327,8 +6356,7 @@ webViewConfiguration:(WKWebViewConfiguration *)webViewConfiguration
         [_textview updatePortholeColorsWithUseSelectedTextColor:willUseSelectedTextColor
                                                     deferUpdate:YES];
     }
-    self.cursorGuideColor = [[iTermProfilePreferences objectForKey:iTermAmendedColorKey(KEY_CURSOR_GUIDE_COLOR, aDict, dark)
-                                                         inProfile:aDict] colorValueForKey:iTermAmendedColorKey(KEY_CURSOR_GUIDE_COLOR, aDict, dark)];
+    self.cursorGuideColor = [self colorForKey:iTermAmendedColorKey(KEY_CURSOR_GUIDE_COLOR, aDict, dark) inProfile:aDict];
     if (!_cursorGuideSettingHasChanged) {
         _textview.highlightCursorLine = [iTermProfilePreferences boolForKey:iTermAmendedColorKey(KEY_USE_CURSOR_GUIDE, aDict, dark)
                                                                   inProfile:aDict];
@@ -6339,8 +6367,7 @@ webViewConfiguration:(WKWebViewConfiguration *)webViewConfiguration
 
     self.useActivePaneBorder = [iTermProfilePreferences boolForKey:iTermAmendedColorKey(KEY_USE_ACTIVE_PANE_BORDER, aDict, dark)
                                                          inProfile:aDict];
-    self.activePaneBorderColor = [[iTermProfilePreferences objectForKey:iTermAmendedColorKey(KEY_ACTIVE_PANE_BORDER_COLOR, aDict, dark)
-                                                              inProfile:aDict] colorValueForKey:iTermAmendedColorKey(KEY_ACTIVE_PANE_BORDER_COLOR, aDict, dark)];
+    self.activePaneBorderColor = [self colorForKey:iTermAmendedColorKey(KEY_ACTIVE_PANE_BORDER_COLOR, aDict, dark) inProfile:aDict];
     [self updateFloatingPaneOutlineColor];
 
     [self setSmartCursorColor:[iTermProfilePreferences boolForKey:iTermAmendedColorKey(KEY_SMART_CURSOR_COLOR, aDict, dark)
@@ -11689,7 +11716,8 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     // The local it2 finds its socket by suite, so a second instance running under -suite can be
     // told apart from the main one, and it asks THIS bundle for a cookie rather than whatever
     // IT2_APP_PATH the tmux server froze into every pane when some other build started it.
-    return @{ @"suite": [iTermUserDefaults customSuiteName] ?: @"iTerm2",
+    // it2 treats the suite as the name of the Application Support folder, so advertise that.
+    return @{ @"suite": [iTermUserDefaults customSuiteDirectoryName] ?: @"iTerm2",
               @"app": [[NSBundle mainBundle] bundlePath] };
 }
 
@@ -11797,17 +11825,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 // nothing is running tmux in it, so leave tmux mode before anything is typed into the shell (QA
 // finding F-832). Another job, like ssh, can't be told apart from tmux, so it is trusted.
 + (BOOL)processNameIsAShell:(NSString *)name {
-    static NSSet<NSString *> *shells;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        shells = [[NSSet alloc] initWithArray:@[ @"zsh", @"bash", @"sh", @"fish", @"tcsh", @"csh",
-                                                 @"ksh", @"dash", @"nu", @"xonsh", @"elvish" ]];
-    });
-    NSString *base = name.lastPathComponent;
-    if ([base hasPrefix:@"-"]) {
-        base = [base substringFromIndex:1];
-    }
-    return base.length > 0 && [shells containsObject:base];
+    return [iTermLSOF processNameIsAShell:name];
 }
 
 - (void)stopRestoredTmuxModeIfNoTmuxIsRunning {
@@ -12920,6 +12938,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
         case KEY_ACTION_SWAP_WITH_PREVIOUS_PANE:
         case KEY_ACTION_ALERT_ON_NEXT_MARK:
         case KEY_ACTION_COPY_MODE:
+        case KEY_ACTION_SET_CHARACTER_ENCODING:
             return NO;
 
         case KEY_ACTION_TOGGLE_SETTING:
@@ -13370,6 +13389,23 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
         case KEY_ACTION_TOGGLE_MOUSE_REPORTING:
             [self setXtermMouseReportingEverAllowed:![self xtermMouseReporting]];
             break;
+        case KEY_ACTION_SET_CHARACTER_ENCODING: {
+            const NSStringEncoding encoding = (NSStringEncoding)action.parameter.integerValue;
+            if (encoding == 0 || ![NSString it_isAvailableStringEncoding:encoding]) {
+                DLog(@"Ignoring set-character-encoding binding with unavailable encoding %@", action.parameter);
+                break;
+            }
+            // Persist into the session's divorced profile so Edit Session and
+            // session restores reflect the change; reloadProfile applies it live.
+            [self setSessionSpecificProfileValues:@{ KEY_CHARACTER_ENCODING: @(encoding) }];
+            [_view showUnobtrusiveMessage:[NSString stringWithFormat:NSLocalizedStringWithDefaultValue(@"KeyBindingAction.SetCharacterEncodingToast",
+                                                                                                      nil,
+                                                                                                      [NSBundle mainBundle],
+                                                                                                      @"Character encoding set to %@",
+                                                                                                      @"Message shown in the session after changing the character encoding with a key binding; %@ is the name of the encoding"),
+                                          [NSString localizedNameOfStringEncoding:encoding]]];
+            break;
+        }
         case KEY_ACTION_INVOKE_SCRIPT_FUNCTION:
             [self invokeFunctionCall:action.parameter
                                scope:self.variablesScope
@@ -14439,7 +14475,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 }
 
 - (NSString *)textViewKnownLocalWorkingDirectory {
-    return _directoryTracker.polledLocalDirectory;
+    return _directoryTracker.verifiedLocalDirectory;
 }
 
 // NOTE: This will not fetch the current directory if it's not already known to avoid blocking
@@ -16295,12 +16331,15 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     }
 }
 
-- (void)textViewShowJSONPromotion {
-    if ([self.textview.replacementPayloadsForSelection anyWithBlock:^BOOL(iTermSelectionReplacement *replacement) {
+- (BOOL)textViewShowJSONPromotion {
+    if (![self.textview.replacementPayloadsForSelection anyWithBlock:^BOOL(iTermSelectionReplacement *replacement) {
         return replacement.kind == iTermSelectionReplacementKindJson;
     }]) {
-        [self.naggingController showJSONPromotion];
+        DLog(@"Not showing JSON promotion because the selection has no JSON replacement");
+        return NO;
     }
+    [self.naggingController showJSONPromotion];
+    return YES;
 }
 
 - (void)textViewUserDidClickPathMark:(id<iTermPathMarkReading>)pathMark {
@@ -17892,8 +17931,13 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     [[_delegate realParentWindow] incrementBadge];
 }
 
-- (void)screenGetWorkingDirectoryWithCompletion:(void (^)(NSString *))completion {
-    DLog(@"screenGetWorkingDirectoryWithCompletion");
+- (void)screenGetWorkingDirectoryForReportedChange:(BOOL)reportedChange
+                                        completion:(void (^)(NSString *))completion {
+    DLog(@"screenGetWorkingDirectoryForReportedChange:%@", @(reportedChange));
+    if (reportedChange) {
+        // Before adding the completion, so it isn't given a poll from before the report.
+        [_directoryTracker directoryChangeReportedWithoutDirectory];
+    }
     [_directoryTracker addOneTimeCompletion:completion];
     [_directoryTracker poll];
 }
@@ -20917,6 +20961,12 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
                                                                                      completion:completion];
 }
 
+- (void)asyncFreshInitialDirectoryForNewSession:(void (^)(NSString *pwd))completion {
+    [_directoryTracker asyncInitialDirectoryForNewSessionWithSshIdentity:nil
+                                                                   fresh:YES
+                                                              completion:completion];
+}
+
 - (void)asyncCurrentLocalWorkingDirectory:(void (^)(NSString *pwd))completion {
     [_directoryTracker asyncCurrentLocalWorkingDirectoryWithCompletion:completion];
 }
@@ -20930,13 +20980,15 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
                                      remoteHost:(id<VT100RemoteHostReading>)remoteHost
                                   withDirectory:(NSString *)directory
                                        pushType:(VT100ScreenWorkingDirectoryPushType)pushType
+                                       locality:(VT100ScreenWorkingDirectoryLocality)locality
                                        accepted:(BOOL)accepted {
-    DLog(@"screenLogWorkingDirectoryOnAbsoluteLine:%@ remoteHost:%@ withDirectory:%@ pushType:%@ accepted:%@",
-         @(absLine), remoteHost, directory, @(pushType), @(accepted));
+    DLog(@"screenLogWorkingDirectoryOnAbsoluteLine:%@ remoteHost:%@ withDirectory:%@ pushType:%@ locality:%@ accepted:%@",
+         @(absLine), remoteHost, directory, @(pushType), @(locality), @(accepted));
     [_directoryTracker screenLogWorkingDirectoryOnAbsoluteLine:absLine
                                                     remoteHost:remoteHost
                                                  withDirectory:directory
                                                       pushType:pushType
+                                                      locality:locality
                                                       accepted:accepted];
 }
 
@@ -24674,6 +24726,10 @@ static const int iTermNestedFramerRecoveryMaximumExtensions = 4;
     return _shell.pid;
 }
 
+- (pid_t)directoryTrackerForegroundProcessGroup:(iTermSessionDirectoryTracker *)tracker {
+    return _shell.foregroundProcessGroup;
+}
+
 - (NSString *)directoryTrackerEnvironmentPWD:(iTermSessionDirectoryTracker *)tracker {
     return self.environment[@"PWD"];
 }
@@ -24688,6 +24744,16 @@ static const int iTermNestedFramerRecoveryMaximumExtensions = 4;
 
 - (id<iTermWorkingDirectoryProvider>)directoryTrackerWorkingDirectoryProvider:(iTermSessionDirectoryTracker *)tracker {
     return _shell;
+}
+
+- (void)directoryTracker:(iTermSessionDirectoryTracker *)tracker
+resolveSymlinksInDirectory:(NSString *)directory
+              completion:(void (^)(NSString *))completion {
+    [[iTermSlowOperationGateway sharedInstance] resolvePathOfDirectory:directory
+                                                            completion:^(NSString *resolved) {
+        // Polls get the same treatment (see iTermLSOF), so the two compare as strings.
+        completion(resolved ? [[iTermSyntheticConfParser sharedInstance] pathByReplacingPrefixWithSyntheticRoot:resolved] : nil);
+    }];
 }
 
 - (id<iTermSSHIdentityProvider>)directoryTrackerSSHIdentityProvider:(iTermSessionDirectoryTracker *)tracker {
@@ -28088,13 +28154,14 @@ static NSString *IT2AuthorizationAnnouncementIdentifier(NSString *guid) {
     // status the records put up. cc-status parks counts and turn flags with
     // updates that say nothing about the status, and an update whose
     // preconditions fail is dropped.
-    if (_programStatusController &&
-        status.assertsStatus &&
-        [self.tabStatusController.status preconditionsHoldFor:status]) {
+    const BOOL preconditionsHold = [self.tabStatusController.status preconditionsHoldFor:status];
+    if (_programStatusController && status.assertsStatus && preconditionsHold) {
         [_programStatusController otherWriterDidSetStatus];
     }
     [self.tabStatusController apply:status];
-    if (status.progressPresence == VT100TabStatusUpdateFieldSet) {
+    // A dropped update is dropped whole: its ring would otherwise start or stop beside a status
+    // it did not change, with nothing left to put it right.
+    if (preconditionsHold && status.progressPresence == VT100TabStatusUpdateFieldSet) {
         // The ring goes through the screen exactly as OSC 9;4 does, so the tab bar draws it and
         // the delegate hears that the program reported it (the status controller's cue that an
         // operation ended). The status controller was told first, above, so an update that both
@@ -28124,6 +28191,9 @@ static NSString *IT2AuthorizationAnnouncementIdentifier(NSString *guid) {
             } recordDidChangeState:^(iTermProgramStatusDisplayRecord *record) {
                 [weakSelf programStatusRecordDidChangeState:record];
             }];
+        _programStatusController.hookTabStatus = ^iTermSessionTabStatus * {
+            return weakSelf.tabStatus;
+        };
     }
     return _programStatusController;
 }

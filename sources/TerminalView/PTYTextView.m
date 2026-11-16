@@ -682,6 +682,14 @@ const CGFloat PTYTextViewMarginClickGraceWidth = 2.0;
           !!(theEvent.it_modifierFlags & NSEventModifierFlagControl));
     [_delegate textViewDidReceiveFlagsChangedEvent:theEvent];
     [self updateUnderlinedURLs:theEvent];
+    if (!(theEvent.it_modifierFlags & NSEventModifierFlagCommand)) {
+        // With Cmd down, updateUnderlinedURLs takes care of the pointer. Otherwise it may
+        // return early, so update the pointer here. This makes Option (which bypasses mouse
+        // reporting) swap the reporting pointer for a plain I-beam right away.
+        if ([self updateCursor:theEvent action:nil]) {
+            [self requestDelegateRedraw];
+        }
+    }
     NSString *string = [_keyboardHandler.keyMapper keyMapperStringForPreCocoaEvent:theEvent];
     if (string) {
         [_delegate insertText:string];
@@ -1633,11 +1641,20 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
 
         // Check if this should use smooth slide:
         // - cursorSmoothSlide preference is enabled
-        // - cursor type supports it (underscore or vertical bar, not block)
+        // - cursor type supports it (drawingHelper.cursorSupportsSmoothSlide)
         // - 1-cell horizontal move
+        // - not a box cursor on the legacy renderer: the legacy animator shows
+        //   a cached screenshot with the cursor hidden underneath the sliding
+        //   rectangle, so a box cursor's character-inversion would be hidden
+        //   entirely for the whole animation. The Metal renderer crossfades
+        //   the glyph color by how much of each column the box covers
+        //   instead (see applyBoxCursorTextColorTweakForRow: in
+        //   iTermMetalPerFrameState.m), so it isn't affected by this
+        //   exclusion; a box cursor still just jumps on the legacy renderer.
         const BOOL useSmoothSlide = (smoothSlideEnabled &&
                                      drawingHelper.cursorSupportsSmoothSlide &&
-                                     [self shouldSmoothSlideFrom:from to:to]);
+                                     [self shouldSmoothSlideFrom:from to:to] &&
+                                     !(isLegacyPath && drawingHelper.cursorType == CURSOR_BOX));
         if (useSmoothSlide) {
             DLog(@"Using smooth slide animation");
             if (isLegacyPath) {
@@ -4166,8 +4183,8 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
 
     __weak __typeof(self) weakSelf = self;
     [iTermJSONPrettyPrinter promoteIfJSONWithString:copyString
-                                           callback:^{
-        [weakSelf.delegate textViewShowJSONPromotion];
+                                           callback:^BOOL{
+        return [weakSelf.delegate textViewShowJSONPromotion];
     }];
 }
 

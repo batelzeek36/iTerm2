@@ -731,6 +731,7 @@
 		2621488B01FD8224242400F6 /* CompanionTouchMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7FA7091BC6651354944E64 /* CompanionTouchMapper.swift */; };
 		265B5BEC383FF5AB85971F30 /* iTermAutoresizingFloorAuditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 549AB34D98B0F7595015C26B /* iTermAutoresizingFloorAuditor.swift */; };
 		267AE2EAC26A34BB9D592311 /* Conductor+Flow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FDD9EA5DA3BD3298CBEDAE2 /* Conductor+Flow.swift */; };
+		2683D27699B9CA4F714C7FAA /* WorkgroupPeerStartingDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0959D9F8E842A084736B9B52 /* WorkgroupPeerStartingDirectory.swift */; };
 		26BD366BD1D02047E84E5F8D /* iTermWorkgroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A6B1D037AF894E662A0EFC /* iTermWorkgroup.swift */; };
 		26EB541CEAA6EC4E871C9D9B /* AgentStatusBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CE64337652D1144ADAE8301 /* AgentStatusBackend.swift */; };
 		29C503BA29752DF6A4DB2A02 /* iTermBlurRowBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19537E68A2ADEB03B3086882 /* iTermBlurRowBuffer.swift */; };
@@ -1148,6 +1149,7 @@
 		7DAF3897BC1A4B7E33AB921B /* ProfileCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06CD1E12A99FD69B6B9B93ED /* ProfileCommand.swift */; };
 		7EC7B2A225BF1928EC1FDC59 /* KittyDnDEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CD730E01FEC61F4572BBE82 /* KittyDnDEndpoint.swift */; };
 		7F1D5FC8326911E82FE9C402 /* ExitWorkgroupTrigger.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D218FDCACCEF2DA820B7D4 /* ExitWorkgroupTrigger.swift */; };
+		7F21CC66F413DBE8E2306AF2 /* iTermTabGroupNesting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20DCBB1EE6BF0CDB52AAA56 /* iTermTabGroupNesting.swift */; };
 		7F32AA8E6EF5BBFBD27236EA /* MentionPlainTextRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08C19577D9B6A8202A0A8E07 /* MentionPlainTextRenderer.swift */; };
 		7FFBFAFE7FC065F7FDACBC71 /* ChatAgentConsoleLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = C606E59CAE46211246F7B63D /* ChatAgentConsoleLogger.swift */; };
 		8008796EC80143F16E30D1A4 /* CodeReviewPromptManagerWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7B8DBB7E0FAD724F2C26042 /* CodeReviewPromptManagerWindowController.swift */; };
@@ -1187,6 +1189,37 @@
 		90C2E83D1854DB67AD5F08E1 /* AIExplanationRequest+Mac.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C9EF4B4D9DF2F4E3CA2A3F5 /* AIExplanationRequest+Mac.swift */; };
 		912D29CFF1994D9E50295715 /* WorkgroupPresets.swift in Sources */ = {isa = PBXBuildFile; fileRef = E14CEFBAD0421B3A960496A9 /* WorkgroupPresets.swift */; };
 		913D206F542831FFE1244B1E /* KittyDnDPasteboardDropData.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA1778C425F487D1B0B80016 /* KittyDnDPasteboardDropData.swift */; };
+		922305886078B0369CEB6655 /* repl_banner-es.txt in Resources */ = {isa = PBXBuildFile; fileRef = DE91DA5FD52DB461DF902B9A /* repl_banner-es.txt */; };
+		9EF0BE79D0A18F6B6433E07F /* repl_banner-fr.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4D1526B5EEFF52435633BD72 /* repl_banner-fr.txt */; };
+		B44D0D7352607791E4D1D141 /* repl_banner-zh-Hant.txt in Resources */ = {isa = PBXBuildFile; fileRef = 0E76A3A866085A1F919D6219 /* repl_banner-zh-Hant.txt */; };
+		0CCB6CA85B2F71B032F49D68 /* repl_banner-it.txt in Resources */ = {isa = PBXBuildFile; fileRef = 558E4A7A09D1C7875371E58C /* repl_banner-it.txt */; };
+		3195EB4B8AA7757F9735F900 /* repl_banner-vi.txt in Resources */ = {isa = PBXBuildFile; fileRef = 20A217AA265878F2D1E2339D /* repl_banner-vi.txt */; };
+		09B54583D7F5F5703EB5F42D /* repl_banner-pl.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9A5845214228257B63545200 /* repl_banner-pl.txt */; };
+		7C7C9B9A1AF5807BF4330BE1 /* repl_banner-es-US.txt in Resources */ = {isa = PBXBuildFile; fileRef = E6512E6DA4F450B6E5AA1021 /* repl_banner-es-US.txt */; };
+		A925928BCBEAC8411FBB87EB /* repl_banner-pt-PT.txt in Resources */ = {isa = PBXBuildFile; fileRef = 60937413161C28938B5FC0DC /* repl_banner-pt-PT.txt */; };
+		880E17828056F9DC0BEA5693 /* repl_banner-zh-HK.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1855826888D25CE7E76E7072 /* repl_banner-zh-HK.txt */; };
+		B43B43937FD66132223ECFFD /* repl_banner-es-419.txt in Resources */ = {isa = PBXBuildFile; fileRef = 30552B692A76FB5B53F89205 /* repl_banner-es-419.txt */; };
+		7E7753E38AC20B4FD465724E /* repl_banner-fr-CA.txt in Resources */ = {isa = PBXBuildFile; fileRef = A9549F67C83F6A0B87911EDD /* repl_banner-fr-CA.txt */; };
+		444F4AA2E53DFA72B0A325FA /* repl_banner-yue-Hans.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9F126231B0DA0BB11C07FD69 /* repl_banner-yue-Hans.txt */; };
+		C3DBE2B50D21732A6AD8820F /* repl_banner-ca.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CD710558183DACF49C94D06 /* repl_banner-ca.txt */; };
+		F436CF6211CB48F69E1523DC /* repl_banner-th.txt in Resources */ = {isa = PBXBuildFile; fileRef = 8CF951896F58CEA3AE5817AB /* repl_banner-th.txt */; };
+		21B9E02F4AC3DBD7611315B2 /* repl_banner-hi.txt in Resources */ = {isa = PBXBuildFile; fileRef = 78EB42A745FD22101B9BA08F /* repl_banner-hi.txt */; };
+		3AFC3E0372DCE4325FA0D664 /* repl_banner-ms.txt in Resources */ = {isa = PBXBuildFile; fileRef = 6ED76F647C086AF3103F8ABA /* repl_banner-ms.txt */; };
+		F392E2ADBB8AB2B37CF7C99C /* repl_banner-id.txt in Resources */ = {isa = PBXBuildFile; fileRef = 3856C03C6B5AD84F350FD03D /* repl_banner-id.txt */; };
+		017B5DFFA44D729B54AB95AE /* repl_banner-uk.txt in Resources */ = {isa = PBXBuildFile; fileRef = 23A8D195D3EC87B949C6128D /* repl_banner-uk.txt */; };
+		1DC5312DF14675F63EBBE151 /* repl_banner-el.txt in Resources */ = {isa = PBXBuildFile; fileRef = 83F71F115986F48762EBCB3C /* repl_banner-el.txt */; };
+		1D2995D53ED99C175716A0C1 /* repl_banner-ro.txt in Resources */ = {isa = PBXBuildFile; fileRef = D1975D36D7F797C5ABDAAF45 /* repl_banner-ro.txt */; };
+		C3B82B04CABE36C49A081F2A /* repl_banner-hu.txt in Resources */ = {isa = PBXBuildFile; fileRef = 6FB37CC3F3858C15D36F61F0 /* repl_banner-hu.txt */; };
+		F2B32064BCE978CBCAA227BC /* repl_banner-hr.txt in Resources */ = {isa = PBXBuildFile; fileRef = FA3D618EF04E2D1BC4C16AFE /* repl_banner-hr.txt */; };
+		DF29493C78B185BA65EC7734 /* repl_banner-sl.txt in Resources */ = {isa = PBXBuildFile; fileRef = ED6DAFAE13794CBD3D471A68 /* repl_banner-sl.txt */; };
+		3EDE547BE2E08BB9E37F90FB /* repl_banner-sk.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4C6729C88CE1766B5A742A54 /* repl_banner-sk.txt */; };
+		D4DE93BD6B88AB4A92450872 /* repl_banner-cs.txt in Resources */ = {isa = PBXBuildFile; fileRef = BCCBB39A609BFEBBB103FB9C /* repl_banner-cs.txt */; };
+		19F32F25B7612BA98BFAEBDA /* repl_banner-fi.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4350A0552366F6D9FB355B3B /* repl_banner-fi.txt */; };
+		14616FF34FF283465B828031 /* repl_banner-nb.txt in Resources */ = {isa = PBXBuildFile; fileRef = CDF934C494BAD6FF1BD76C28 /* repl_banner-nb.txt */; };
+		63EFFFE511163DBEAF85FE65 /* repl_banner-da.txt in Resources */ = {isa = PBXBuildFile; fileRef = 38D839CA7530C040AC101600 /* repl_banner-da.txt */; };
+		3FBA8E06F48A4E3B256CCABA /* repl_banner-sv.txt in Resources */ = {isa = PBXBuildFile; fileRef = 53D827AD2B7CD7BB9BCDCACA /* repl_banner-sv.txt */; };
+		DC5583C79FE518A9E1DE97DC /* repl_banner-nl.txt in Resources */ = {isa = PBXBuildFile; fileRef = 87210F4B2BE94BF603CFE172 /* repl_banner-nl.txt */; };
+		9C5EF877A91BD339866A092E /* repl_banner-tr.txt in Resources */ = {isa = PBXBuildFile; fileRef = 349F14A036B697A98BF7DE19 /* repl_banner-tr.txt */; };
 		92A29632EF0D9D0E455E2AA6 /* UserVariableAssignment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 467CB6090319516B1F45E9FD /* UserVariableAssignment.swift */; };
 		9310AD39287478C20BA12921 /* iTermAppDockPlacementStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F9DC50236404184DC0D0AFC /* iTermAppDockPlacementStore.swift */; };
 		93192814C6B3391E62C3E35F /* FloatingPaneGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30BF7D3BA2F495FEEAF1F1C9 /* FloatingPaneGeometry.swift */; };
@@ -1548,6 +1581,7 @@
 		A621F10C26F650DF001DD3A6 /* ScreenCharArray.m in Sources */ = {isa = PBXBuildFile; fileRef = A621F10A26F650DF001DD3A6 /* ScreenCharArray.m */; };
 		A621F10F26F8E9E6001DD3A6 /* iTermTLVCodec.h in Headers */ = {isa = PBXBuildFile; fileRef = A621F10D26F8E9E6001DD3A6 /* iTermTLVCodec.h */; };
 		A621F11026F8E9E6001DD3A6 /* iTermTLVCodec.m in Sources */ = {isa = PBXBuildFile; fileRef = A621F10E26F8E9E6001DD3A6 /* iTermTLVCodec.m */; };
+		A62305DD709AEA800869BF10 /* ClaudeCodeStatusOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1663D08B7D59827B98BB8ACE /* ClaudeCodeStatusOverlay.swift */; };
 		A623D94E1F8984700011F8C3 /* key@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = A623D94A1F8983D80011F8C3 /* key@2x.png */; };
 		A623D9501F8984710011F8C3 /* key@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = A623D94A1F8983D80011F8C3 /* key@2x.png */; };
 		A624231019CF6B0C00182C08 /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A624230F19CF6B0C00182C08 /* Sparkle.framework */; };
@@ -4767,6 +4801,37 @@
 		D14E96013DD1B056E5D3648A /* KittyDnDViewDragHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B3B7308CA423F151EA51042 /* KittyDnDViewDragHost.swift */; };
 		D2EA0869C83835F0422A576A /* iTermTabTitleFrameFingerprint.m in Sources */ = {isa = PBXBuildFile; fileRef = 492BD49DF191574CBABE660D /* iTermTabTitleFrameFingerprint.m */; };
 		D364886B87EB8B81EB2FCEA3 /* StableSessionID.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4CF48AED76F97C523B1A9E6 /* StableSessionID.swift */; };
+		D3BCFD44EDD5D29A47EBB177 /* repl_banner-es.txt in Resources */ = {isa = PBXBuildFile; fileRef = DE91DA5FD52DB461DF902B9A /* repl_banner-es.txt */; };
+		87E6D376E84D876F7489A18E /* repl_banner-fr.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4D1526B5EEFF52435633BD72 /* repl_banner-fr.txt */; };
+		CE7CC731CB8B32F4A1D41DC9 /* repl_banner-zh-Hant.txt in Resources */ = {isa = PBXBuildFile; fileRef = 0E76A3A866085A1F919D6219 /* repl_banner-zh-Hant.txt */; };
+		2877EF037945DD91E2FA6876 /* repl_banner-it.txt in Resources */ = {isa = PBXBuildFile; fileRef = 558E4A7A09D1C7875371E58C /* repl_banner-it.txt */; };
+		DDF7515C2047CBD594C8E494 /* repl_banner-vi.txt in Resources */ = {isa = PBXBuildFile; fileRef = 20A217AA265878F2D1E2339D /* repl_banner-vi.txt */; };
+		D12A1458C128178184A90834 /* repl_banner-pl.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9A5845214228257B63545200 /* repl_banner-pl.txt */; };
+		D60F9E1ABC3B87F6572B474B /* repl_banner-es-US.txt in Resources */ = {isa = PBXBuildFile; fileRef = E6512E6DA4F450B6E5AA1021 /* repl_banner-es-US.txt */; };
+		B6D89774C33A65184589974A /* repl_banner-pt-PT.txt in Resources */ = {isa = PBXBuildFile; fileRef = 60937413161C28938B5FC0DC /* repl_banner-pt-PT.txt */; };
+		7E5030965C8A3E35069B6986 /* repl_banner-zh-HK.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1855826888D25CE7E76E7072 /* repl_banner-zh-HK.txt */; };
+		8105EDD85B93831A8840FF66 /* repl_banner-es-419.txt in Resources */ = {isa = PBXBuildFile; fileRef = 30552B692A76FB5B53F89205 /* repl_banner-es-419.txt */; };
+		F5BAFC2D639ECC38E4BAAFCB /* repl_banner-fr-CA.txt in Resources */ = {isa = PBXBuildFile; fileRef = A9549F67C83F6A0B87911EDD /* repl_banner-fr-CA.txt */; };
+		9B4A77C45871B86EB20209F3 /* repl_banner-yue-Hans.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9F126231B0DA0BB11C07FD69 /* repl_banner-yue-Hans.txt */; };
+		8CEF9EEA5C67B0288258224A /* repl_banner-ca.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CD710558183DACF49C94D06 /* repl_banner-ca.txt */; };
+		EAA6041F4D4233891031C99F /* repl_banner-th.txt in Resources */ = {isa = PBXBuildFile; fileRef = 8CF951896F58CEA3AE5817AB /* repl_banner-th.txt */; };
+		5798F1D146A7E0F9FEDD71A0 /* repl_banner-hi.txt in Resources */ = {isa = PBXBuildFile; fileRef = 78EB42A745FD22101B9BA08F /* repl_banner-hi.txt */; };
+		D4DC87490034AA77F3E968E2 /* repl_banner-ms.txt in Resources */ = {isa = PBXBuildFile; fileRef = 6ED76F647C086AF3103F8ABA /* repl_banner-ms.txt */; };
+		5165E32CBB1437C6EF514BA7 /* repl_banner-id.txt in Resources */ = {isa = PBXBuildFile; fileRef = 3856C03C6B5AD84F350FD03D /* repl_banner-id.txt */; };
+		77FFACA59E8DA48F8DBD657D /* repl_banner-uk.txt in Resources */ = {isa = PBXBuildFile; fileRef = 23A8D195D3EC87B949C6128D /* repl_banner-uk.txt */; };
+		D9C27C2E38D6D58DD4D124DD /* repl_banner-el.txt in Resources */ = {isa = PBXBuildFile; fileRef = 83F71F115986F48762EBCB3C /* repl_banner-el.txt */; };
+		D745F682CD352F81542FADF2 /* repl_banner-ro.txt in Resources */ = {isa = PBXBuildFile; fileRef = D1975D36D7F797C5ABDAAF45 /* repl_banner-ro.txt */; };
+		E5FF5F73DAF49793AB8FA2B9 /* repl_banner-hu.txt in Resources */ = {isa = PBXBuildFile; fileRef = 6FB37CC3F3858C15D36F61F0 /* repl_banner-hu.txt */; };
+		5C4F9345F20FD2BB3CB01CCE /* repl_banner-hr.txt in Resources */ = {isa = PBXBuildFile; fileRef = FA3D618EF04E2D1BC4C16AFE /* repl_banner-hr.txt */; };
+		ED0C522015C4B03995AA64BF /* repl_banner-sl.txt in Resources */ = {isa = PBXBuildFile; fileRef = ED6DAFAE13794CBD3D471A68 /* repl_banner-sl.txt */; };
+		04943ACE973D42C6B85461E9 /* repl_banner-sk.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4C6729C88CE1766B5A742A54 /* repl_banner-sk.txt */; };
+		C2C3939C4441240F86361833 /* repl_banner-cs.txt in Resources */ = {isa = PBXBuildFile; fileRef = BCCBB39A609BFEBBB103FB9C /* repl_banner-cs.txt */; };
+		EB1C2E4CAAB6837B9A7971B2 /* repl_banner-fi.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4350A0552366F6D9FB355B3B /* repl_banner-fi.txt */; };
+		5BF8DA367920D5CEBC3E0519 /* repl_banner-nb.txt in Resources */ = {isa = PBXBuildFile; fileRef = CDF934C494BAD6FF1BD76C28 /* repl_banner-nb.txt */; };
+		4196347B187776F2B0591B88 /* repl_banner-da.txt in Resources */ = {isa = PBXBuildFile; fileRef = 38D839CA7530C040AC101600 /* repl_banner-da.txt */; };
+		FF2650F78E4451DA58A55EE3 /* repl_banner-sv.txt in Resources */ = {isa = PBXBuildFile; fileRef = 53D827AD2B7CD7BB9BCDCACA /* repl_banner-sv.txt */; };
+		1553CAA7DDFE419BFA5297CC /* repl_banner-nl.txt in Resources */ = {isa = PBXBuildFile; fileRef = 87210F4B2BE94BF603CFE172 /* repl_banner-nl.txt */; };
+		71EBDA870F768D613C38493D /* repl_banner-tr.txt in Resources */ = {isa = PBXBuildFile; fileRef = 349F14A036B697A98BF7DE19 /* repl_banner-tr.txt */; };
 		D3C3D7DE7E900CCF5BA700F0 /* ChildReaper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 322466D9BE92E249E2878D66 /* ChildReaper.swift */; };
 		D3CE2D4E1A00936F0098ED99 /* PSMDarkTabStyle.h in Headers */ = {isa = PBXBuildFile; fileRef = D3CE2D4C1A00936F0098ED99 /* PSMDarkTabStyle.h */; };
 		D3D470D34777DFA2474E14DC /* iTermSessionTabStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA1C7B91071000DE37B9DA33 /* iTermSessionTabStatus.swift */; };
@@ -4779,16 +4844,19 @@
 		D5EF7F4036204859817200E0 /* iTermLayoutCalculator.h in Headers */ = {isa = PBXBuildFile; fileRef = 93EDFB853885460AA504C6B9 /* iTermLayoutCalculator.h */; };
 		D730EE99C79E77BDAFA30E2C /* ApplyLayoutBuiltInFunction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9801DA0646B0541548CD6B0E /* ApplyLayoutBuiltInFunction.swift */; };
 		D7391EB323E94EAC34943C01 /* iTermOptionalPathRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF73E7832C84F926A6CE54CA /* iTermOptionalPathRecognizer.swift */; };
+		D7BEED2BBCFDBE57CF0A6022 /* AIModelListDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00C8FC2933F9D22550144F7 /* AIModelListDiscovery.swift */; };
 		D7DC5CC75BA0E74CB40BC7D0 /* TriggerInterpolatedParameter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40BFAD540F7ADE3A2B38F18A /* TriggerInterpolatedParameter.swift */; };
 		D84BB43FD70B90C95749E239 /* KittyDnDRemoteDragFetch.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF4EB2F8A0FE23B11C939523 /* KittyDnDRemoteDragFetch.swift */; };
 		D86A2063A6E9013EBC797392 /* iTermProfileReadRecorder.h in Sources */ = {isa = PBXBuildFile; fileRef = 1DA2DE947A7ECC3BAB298DBA /* iTermProfileReadRecorder.h */; };
 		D91F883FD3D1E555EF9CFC86 /* VT100ScreenMutableState+RCDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B686BCDF76FA9118F116990 /* VT100ScreenMutableState+RCDataSource.m */; };
 		D9A2368683D7DDB73A826821 /* iTermStreamingPNGWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = 11C735CA9A1AF5E864EC718E /* iTermStreamingPNGWriter.m */; };
+		DA15C6ED3B5E1F6F74357D16 /* iTermEventTapBookkeeping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A08915C92A37F857E391027 /* iTermEventTapBookkeeping.swift */; };
 		DA92E7010063E8CD7DDDEE3B /* JSONArraySplice.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD71DB091B2D8353FCFAE0DD /* JSONArraySplice.swift */; };
 		DADD9F9FCAC79239898CA963 /* AgentHookAddress.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE75D56A9127A8D669FBC208 /* AgentHookAddress.swift */; };
 		DB42A165C1B25A2BD5FC2BB8 /* iterm2-test-adapter in CopyFiles */ = {isa = PBXBuildFile; fileRef = 91FA576A88BCF13676249576 /* iterm2-test-adapter */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		DBBAF45A1CB97E40AF51336D /* CompanionWizardWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93E5C503C5B7199DE032A9C7 /* CompanionWizardWindowController.swift */; };
 		DC00F19BF9CD8E2688EF7E10 /* TmuxWorkgroupAttacher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5712612D22BB7E97FB0EFCBE /* TmuxWorkgroupAttacher.swift */; };
+		DC4B81183B28F3C6A956519D /* iTermTabSwitcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9079FD5CC4CD8874C1EB3A56 /* iTermTabSwitcher.swift */; };
 		DC8EC130FF5C84A8B1B3956A /* claude_usage.sh in Resources */ = {isa = PBXBuildFile; fileRef = 264660071C2DC297B2CF9A22 /* claude_usage.sh */; };
 		DCE63F57A37160221DC5B939 /* iTermScreenshotPreviewOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE6718DDCFD2CA382391CDFD /* iTermScreenshotPreviewOverlay.swift */; };
 		DD4E77FB28CD2D48C6A13C66 /* TerminalHardRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECFD443A066A4370FCB20EFC /* TerminalHardRules.swift */; };
@@ -4797,6 +4865,7 @@
 		DDC6A04E4BD124950415EFEA /* iTermHDREngager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C25F46F9F3BA829BDB185B38 /* iTermHDREngager.swift */; };
 		DDF0FD65062916F70080EF74 /* iTermApplication.h in Headers */ = {isa = PBXBuildFile; fileRef = DDF0FD63062916F70080EF74 /* iTermApplication.h */; };
 		DE3AD6D8904090E875D5EFF7 /* AIExplanationResponse+Mac.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F06ECF8A1AE910A311E3128 /* AIExplanationResponse+Mac.swift */; };
+		DE99387F4738F705DB245E77 /* UILanguageCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB849D15C563BC85AC9FC4B8 /* UILanguageCase.swift */; };
 		DECF12ECD66573849C34F781 /* Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E1B6BE78A6A0C18980A2A46 /* Helpers.swift */; };
 		DF93E577C867F721A8F84CB7 /* iTermTabGroupContiguity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842E85C7646AD1CE30E147AD /* iTermTabGroupContiguity.swift */; };
 		DFD374B25802C2E7C25B95F0 /* AILiveOllamaTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EC03AC4196A9AA446D5A176 /* AILiveOllamaTests.swift */; };
@@ -5211,6 +5280,7 @@
 		07A8A9A5AE787B6797A610B2 /* CompanionBrowserFrameSource.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CompanionBrowserFrameSource.swift; sourceTree = "<group>"; };
 		08C19577D9B6A8202A0A8E07 /* MentionPlainTextRenderer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MentionPlainTextRenderer.swift; sourceTree = "<group>"; };
 		08E1B973FF717824BE54F906 /* FloatingPaneBuiltInFunctions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FloatingPaneBuiltInFunctions.swift; sourceTree = "<group>"; };
+		0959D9F8E842A084736B9B52 /* WorkgroupPeerStartingDirectory.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkgroupPeerStartingDirectory.swift; sourceTree = "<group>"; };
 		099C8A86522346410F6224B1 /* ChatManualStackView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChatManualStackView.swift; sourceTree = "<group>"; };
 		0A66CD0466A0D99AC697D076 /* AppCommand.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AppCommand.swift; path = it2cli/Sources/it2core/Commands/AppCommand.swift; sourceTree = "<group>"; };
 		0B7ADC37E1C84693B7DDCC43 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/iTermsStatusBarComposerViewController.xib; sourceTree = "<group>"; };
@@ -5247,6 +5317,7 @@
 		1538A1E2B912F5687FAB3139 /* iTermAPICreateTabFocusDeferral.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = iTermAPICreateTabFocusDeferral.m; sourceTree = "<group>"; };
 		1539EBAEEF538ABD2004044A /* AIChatToolCallRepair.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AIChatToolCallRepair.swift; sourceTree = "<group>"; };
 		16244DB19048FCA0614235A6 /* CompanionPluginTransport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CompanionPluginTransport.swift; sourceTree = "<group>"; };
+		1663D08B7D59827B98BB8ACE /* ClaudeCodeStatusOverlay.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ClaudeCodeStatusOverlay.swift; sourceTree = "<group>"; };
 		167F170AF620D7443F74609C /* CodeReviewPromptView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CodeReviewPromptView.swift; sourceTree = "<group>"; };
 		16DB465E7EEA10EF77E809D5 /* CompanionPluginInstaller.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CompanionPluginInstaller.swift; sourceTree = "<group>"; };
 		16E7789ECB52C72E2DF4D36F /* FlowControlChart.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FlowControlChart.swift; sourceTree = "<group>"; };
@@ -5680,6 +5751,7 @@
 		288808F99DB33274E4751B98 /* CompanionPluginClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CompanionPluginClient.swift; sourceTree = "<group>"; };
 		28AF992AB875E6786421227B /* iTermScreenshotOnDemandPreview.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermScreenshotOnDemandPreview.swift; sourceTree = "<group>"; };
 		28D5075BE24C51CC802DB7EC /* iTermBrowserPageColorTracker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermBrowserPageColorTracker.swift; sourceTree = "<group>"; };
+		2A08915C92A37F857E391027 /* iTermEventTapBookkeeping.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermEventTapBookkeeping.swift; sourceTree = "<group>"; };
 		2A2A4F72E8C0C105D051F037 /* CompanionAgentActivityNotifier.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CompanionAgentActivityNotifier.swift; sourceTree = "<group>"; };
 		2AB82BF69BB74214B99FB3C3 /* mul */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; name = mul; path = mul.lproj/iTermStatusBarKnobFontViewController.xcstrings; sourceTree = "<group>"; };
 		2AEB275FE345E8480B41FAEF /* iTermImageComparison.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = iTermImageComparison.m; sourceTree = "<group>"; };
@@ -5738,6 +5810,7 @@
 		427970C67603E484CBA62CED /* CompanionMessageSubstance.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CompanionMessageSubstance.swift; sourceTree = "<group>"; };
 		434641A807C0B3035264BEF2 /* iTermSessionPreviewPanel.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = iTermSessionPreviewPanel.m; sourceTree = "<group>"; };
 		43834CBF2E72D7D09EF83805 /* mul */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; name = mul; path = mul.lproj/ImportingWindowController.xcstrings; sourceTree = "<group>"; };
+		449EDDC10CA5DD519CEC7DEC /* iTermSixelSize.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = iTermSixelSize.h; sourceTree = "<group>"; };
 		44CB910BF4A14464953BB8DE /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/iTermParameterPanelWindowController.xib; sourceTree = "<group>"; };
 		455A915DA551BA62B103AE45 /* ClaudeCodeRemoteConnectionFacts.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ClaudeCodeRemoteConnectionFacts.swift; sourceTree = "<group>"; };
 		457E888882A6E3DD414DA970 /* CompanionHostBridge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CompanionHostBridge.swift; sourceTree = "<group>"; };
@@ -6186,6 +6259,7 @@
 		8F0A007B1F75B0F4A644FCE8 /* WebSocketClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WebSocketClient.swift; path = it2cli/Sources/it2core/Transport/WebSocketClient.swift; sourceTree = "<group>"; };
 		9017D92D04ABF4EF3FC05999 /* iTermAccessibilitySelectionReplacement.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermAccessibilitySelectionReplacement.swift; sourceTree = "<group>"; };
 		904AE312A0E0489899D9ECB8 /* MenuTips.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = MenuTips.xcassets; sourceTree = "<group>"; };
+		9079FD5CC4CD8874C1EB3A56 /* iTermTabSwitcher.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermTabSwitcher.swift; sourceTree = "<group>"; };
 		915FC56D082AE9C9EF31D4D5 /* CompanionAlert+Database.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "CompanionAlert+Database.swift"; sourceTree = "<group>"; };
 		91FA576A88BCF13676249576 /* iterm2-test-adapter */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = "iterm2-test-adapter"; path = "../pwmplugin/binaries/iterm2-test-adapter"; sourceTree = "<group>"; };
 		927F7B73B30C4AC9B984312A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/iTermHelpMessageViewController.xib; sourceTree = "<group>"; };
@@ -8929,6 +9003,7 @@
 		B15C714EF3CE4AB3BEBC1FC2 /* mul */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; name = mul; path = mul.lproj/iTermShellIntegrationWindowController.xcstrings; sourceTree = "<group>"; };
 		B15DB929A47296D3B8F7CBF9 /* iTermRightGutterPanel.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = iTermRightGutterPanel.h; sourceTree = "<group>"; };
 		B1D1CA9FEA656247ADC53ADF /* ChatSessionMentionAttachment.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChatSessionMentionAttachment.swift; sourceTree = "<group>"; };
+		B20DCBB1EE6BF0CDB52AAA56 /* iTermTabGroupNesting.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermTabGroupNesting.swift; sourceTree = "<group>"; };
 		B21F806A265725167FCCDFC1 /* WorkgroupSessionSpawner.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkgroupSessionSpawner.swift; sourceTree = "<group>"; };
 		B231EDB860248C368A511B42 /* iTermEventTriggerEvaluator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermEventTriggerEvaluator.swift; sourceTree = "<group>"; };
 		B23866DFB3D15427C93C0849 /* EnterWorkgroupTrigger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EnterWorkgroupTrigger.swift; sourceTree = "<group>"; };
@@ -9012,6 +9087,7 @@
 		CF4EB2F8A0FE23B11C939523 /* KittyDnDRemoteDragFetch.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KittyDnDRemoteDragFetch.swift; sourceTree = "<group>"; };
 		CF5EF70CA008EFC44A8CB9BD /* iTermTabTitleFrameFingerprint.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = iTermTabTitleFrameFingerprint.h; sourceTree = "<group>"; };
 		CFDF88A516D67FABD556F296 /* AILiveBlobReplayTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AILiveBlobReplayTests.swift; sourceTree = "<group>"; };
+		D00C8FC2933F9D22550144F7 /* AIModelListDiscovery.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AIModelListDiscovery.swift; sourceTree = "<group>"; };
 		D079EA4C9132883E833B9974 /* iTermLayoutResolver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermLayoutResolver.swift; sourceTree = "<group>"; };
 		D088D34DE6A1CE9BE1F6C874 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/PreferencePanel.xib; sourceTree = "<group>"; };
 		D179768EC1F54A5F90045B7A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/PasteboardHistory.xib; sourceTree = "<group>"; };
@@ -9068,6 +9144,37 @@
 		DDF0FD64062916F70080EF74 /* iTermApplication.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = iTermApplication.m; sourceTree = "<group>"; tabWidth = 4; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		DE33CBB56EA96FD0239D8CED /* OrchestratorError.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OrchestratorError.swift; sourceTree = "<group>"; };
 		DE7B0AE10E1598EDE1E01795 /* iTermEventTriggerParameterView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermEventTriggerParameterView.swift; sourceTree = "<group>"; };
+		DE91DA5FD52DB461DF902B9A /* repl_banner-es.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-es.txt"; path = "sources/repl_banner-es.txt"; sourceTree = "<group>"; };
+		4D1526B5EEFF52435633BD72 /* repl_banner-fr.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-fr.txt"; path = "sources/repl_banner-fr.txt"; sourceTree = "<group>"; };
+		0E76A3A866085A1F919D6219 /* repl_banner-zh-Hant.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-zh-Hant.txt"; path = "sources/repl_banner-zh-Hant.txt"; sourceTree = "<group>"; };
+		558E4A7A09D1C7875371E58C /* repl_banner-it.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-it.txt"; path = "sources/repl_banner-it.txt"; sourceTree = "<group>"; };
+		20A217AA265878F2D1E2339D /* repl_banner-vi.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-vi.txt"; path = "sources/repl_banner-vi.txt"; sourceTree = "<group>"; };
+		9A5845214228257B63545200 /* repl_banner-pl.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-pl.txt"; path = "sources/repl_banner-pl.txt"; sourceTree = "<group>"; };
+		E6512E6DA4F450B6E5AA1021 /* repl_banner-es-US.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-es-US.txt"; path = "sources/repl_banner-es-US.txt"; sourceTree = "<group>"; };
+		60937413161C28938B5FC0DC /* repl_banner-pt-PT.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-pt-PT.txt"; path = "sources/repl_banner-pt-PT.txt"; sourceTree = "<group>"; };
+		1855826888D25CE7E76E7072 /* repl_banner-zh-HK.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-zh-HK.txt"; path = "sources/repl_banner-zh-HK.txt"; sourceTree = "<group>"; };
+		30552B692A76FB5B53F89205 /* repl_banner-es-419.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-es-419.txt"; path = "sources/repl_banner-es-419.txt"; sourceTree = "<group>"; };
+		A9549F67C83F6A0B87911EDD /* repl_banner-fr-CA.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-fr-CA.txt"; path = "sources/repl_banner-fr-CA.txt"; sourceTree = "<group>"; };
+		9F126231B0DA0BB11C07FD69 /* repl_banner-yue-Hans.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-yue-Hans.txt"; path = "sources/repl_banner-yue-Hans.txt"; sourceTree = "<group>"; };
+		1CD710558183DACF49C94D06 /* repl_banner-ca.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-ca.txt"; path = "sources/repl_banner-ca.txt"; sourceTree = "<group>"; };
+		8CF951896F58CEA3AE5817AB /* repl_banner-th.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-th.txt"; path = "sources/repl_banner-th.txt"; sourceTree = "<group>"; };
+		78EB42A745FD22101B9BA08F /* repl_banner-hi.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-hi.txt"; path = "sources/repl_banner-hi.txt"; sourceTree = "<group>"; };
+		6ED76F647C086AF3103F8ABA /* repl_banner-ms.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-ms.txt"; path = "sources/repl_banner-ms.txt"; sourceTree = "<group>"; };
+		3856C03C6B5AD84F350FD03D /* repl_banner-id.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-id.txt"; path = "sources/repl_banner-id.txt"; sourceTree = "<group>"; };
+		23A8D195D3EC87B949C6128D /* repl_banner-uk.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-uk.txt"; path = "sources/repl_banner-uk.txt"; sourceTree = "<group>"; };
+		83F71F115986F48762EBCB3C /* repl_banner-el.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-el.txt"; path = "sources/repl_banner-el.txt"; sourceTree = "<group>"; };
+		D1975D36D7F797C5ABDAAF45 /* repl_banner-ro.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-ro.txt"; path = "sources/repl_banner-ro.txt"; sourceTree = "<group>"; };
+		6FB37CC3F3858C15D36F61F0 /* repl_banner-hu.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-hu.txt"; path = "sources/repl_banner-hu.txt"; sourceTree = "<group>"; };
+		FA3D618EF04E2D1BC4C16AFE /* repl_banner-hr.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-hr.txt"; path = "sources/repl_banner-hr.txt"; sourceTree = "<group>"; };
+		ED6DAFAE13794CBD3D471A68 /* repl_banner-sl.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-sl.txt"; path = "sources/repl_banner-sl.txt"; sourceTree = "<group>"; };
+		4C6729C88CE1766B5A742A54 /* repl_banner-sk.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-sk.txt"; path = "sources/repl_banner-sk.txt"; sourceTree = "<group>"; };
+		BCCBB39A609BFEBBB103FB9C /* repl_banner-cs.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-cs.txt"; path = "sources/repl_banner-cs.txt"; sourceTree = "<group>"; };
+		4350A0552366F6D9FB355B3B /* repl_banner-fi.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-fi.txt"; path = "sources/repl_banner-fi.txt"; sourceTree = "<group>"; };
+		CDF934C494BAD6FF1BD76C28 /* repl_banner-nb.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-nb.txt"; path = "sources/repl_banner-nb.txt"; sourceTree = "<group>"; };
+		38D839CA7530C040AC101600 /* repl_banner-da.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-da.txt"; path = "sources/repl_banner-da.txt"; sourceTree = "<group>"; };
+		53D827AD2B7CD7BB9BCDCACA /* repl_banner-sv.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-sv.txt"; path = "sources/repl_banner-sv.txt"; sourceTree = "<group>"; };
+		87210F4B2BE94BF603CFE172 /* repl_banner-nl.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-nl.txt"; path = "sources/repl_banner-nl.txt"; sourceTree = "<group>"; };
+		349F14A036B697A98BF7DE19 /* repl_banner-tr.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = "repl_banner-tr.txt"; path = "sources/repl_banner-tr.txt"; sourceTree = "<group>"; };
 		DF18C01510605DB0C639038F /* ai-models.json */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.json; name = "ai-models.json"; path = "OtherResources/ai-models.json"; sourceTree = "<group>"; };
 		DF2961C37EC2E8B987F3D400 /* iTermAPICreateTabFocusDeferral.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = iTermAPICreateTabFocusDeferral.h; sourceTree = "<group>"; };
 		DF53E3C0036CD76566117D88 /* iTermRowOutputCache.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = iTermRowOutputCache.h; sourceTree = "<group>"; };
@@ -9202,6 +9309,7 @@
 		FB4CEAC661436E55F3B3A668 /* iTermRemotePreferences.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.objc; path = iTermRemotePreferences.m; sourceTree = "<group>"; tabWidth = 4; };
 		FB4CECF4AC4392B21E87A07B /* iTermRemotePreferences.h */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.h; path = iTermRemotePreferences.h; sourceTree = "<group>"; tabWidth = 4; };
 		FB754C5F036EFC5301F955DB /* config.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = config.png; path = images/config.png; sourceTree = "<group>"; };
+		FB849D15C563BC85AC9FC4B8 /* UILanguageCase.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UILanguageCase.swift; sourceTree = "<group>"; };
 		FB896717038D935801F955DB /* newwin.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = newwin.png; path = images/newwin.png; sourceTree = "<group>"; };
 		FBB2EBCD040AC7C201F955DB /* important.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = important.png; path = images/important.png; sourceTree = "<group>"; };
 		FBD0AD0A0337A5B701F955DB /* PseudoTerminal.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = PseudoTerminal.m; sourceTree = "<group>"; tabWidth = 4; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
@@ -9619,6 +9727,37 @@
 				53FF9823209283D2008688D7 /* template_pyenv_daemon.py */,
 				530AB7BB20A641E000D2AA08 /* repl_banner.txt */,
 				618643F126AA9B1E7BC5FC39 /* repl_banner-pt-BR.txt */,
+				DE91DA5FD52DB461DF902B9A /* repl_banner-es.txt */,
+				4D1526B5EEFF52435633BD72 /* repl_banner-fr.txt */,
+				0E76A3A866085A1F919D6219 /* repl_banner-zh-Hant.txt */,
+				558E4A7A09D1C7875371E58C /* repl_banner-it.txt */,
+				20A217AA265878F2D1E2339D /* repl_banner-vi.txt */,
+				9A5845214228257B63545200 /* repl_banner-pl.txt */,
+				E6512E6DA4F450B6E5AA1021 /* repl_banner-es-US.txt */,
+				60937413161C28938B5FC0DC /* repl_banner-pt-PT.txt */,
+				1855826888D25CE7E76E7072 /* repl_banner-zh-HK.txt */,
+				30552B692A76FB5B53F89205 /* repl_banner-es-419.txt */,
+				A9549F67C83F6A0B87911EDD /* repl_banner-fr-CA.txt */,
+				9F126231B0DA0BB11C07FD69 /* repl_banner-yue-Hans.txt */,
+				1CD710558183DACF49C94D06 /* repl_banner-ca.txt */,
+				8CF951896F58CEA3AE5817AB /* repl_banner-th.txt */,
+				78EB42A745FD22101B9BA08F /* repl_banner-hi.txt */,
+				6ED76F647C086AF3103F8ABA /* repl_banner-ms.txt */,
+				3856C03C6B5AD84F350FD03D /* repl_banner-id.txt */,
+				23A8D195D3EC87B949C6128D /* repl_banner-uk.txt */,
+				83F71F115986F48762EBCB3C /* repl_banner-el.txt */,
+				D1975D36D7F797C5ABDAAF45 /* repl_banner-ro.txt */,
+				6FB37CC3F3858C15D36F61F0 /* repl_banner-hu.txt */,
+				FA3D618EF04E2D1BC4C16AFE /* repl_banner-hr.txt */,
+				ED6DAFAE13794CBD3D471A68 /* repl_banner-sl.txt */,
+				4C6729C88CE1766B5A742A54 /* repl_banner-sk.txt */,
+				BCCBB39A609BFEBBB103FB9C /* repl_banner-cs.txt */,
+				4350A0552366F6D9FB355B3B /* repl_banner-fi.txt */,
+				CDF934C494BAD6FF1BD76C28 /* repl_banner-nb.txt */,
+				38D839CA7530C040AC101600 /* repl_banner-da.txt */,
+				53D827AD2B7CD7BB9BCDCACA /* repl_banner-sv.txt */,
+				87210F4B2BE94BF603CFE172 /* repl_banner-nl.txt */,
+				349F14A036B697A98BF7DE19 /* repl_banner-tr.txt */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -10436,6 +10575,7 @@
 				759637A22593AE0700E278CC /* Info.plist */,
 				A60D20C82597F496004AC979 /* iTermImage+ImageWithData.m */,
 				A60383162943AF1500FE11C2 /* iTerm2SandboxedWorker-Bridging-Header.h */,
+				449EDDC10CA5DD519CEC7DEC /* iTermSixelSize.h */,
 			);
 			path = iTerm2SandboxedWorker;
 			sourceTree = "<group>";
@@ -10497,6 +10637,7 @@
 				A910F0C87249E36FDB26F5A4 /* PTYSession+CodeReviewPromptMigration.swift */,
 				8D28205D894E2762F0075F3B /* WorkgroupRecentsComboBoxItem.swift */,
 				C77BC307D285E491B575D1E1 /* WorkgroupCodeReviewModelSelectorItem.swift */,
+				0959D9F8E842A084736B9B52 /* WorkgroupPeerStartingDirectory.swift */,
 			);
 			path = Workgroups;
 			sourceTree = "<group>";
@@ -10905,6 +11046,7 @@
 				D36976C2B1759AD6645DBAB6 /* OllamaModelCache.swift */,
 				1B4DD875BB21400E903C507B /* AIWithheldKeyAdvice.swift */,
 				EB85C68D00197EF62423074A /* AIModelCredential.swift */,
+				D00C8FC2933F9D22550144F7 /* AIModelListDiscovery.swift */,
 			);
 			path = AITerm;
 			sourceTree = "<group>";
@@ -11217,6 +11359,7 @@
 				A6EFF23E1D21949D00806EEF /* iTermShortcut.m */,
 				A6AE58CA2E83463300762C1D /* iTermSymbolicHotkeys.swift */,
 				F629D4C69CD80D78E2E014C6 /* iTermOpenQuicklyHotKeyProvider.swift */,
+				2A08915C92A37F857E391027 /* iTermEventTapBookkeeping.swift */,
 			);
 			path = Hotkey;
 			sourceTree = "<group>";
@@ -13448,6 +13591,7 @@
 				1AE7A6B656E953B6C1CAA73F /* WindowLocationLockController.swift */,
 				9017D92D04ABF4EF3FC05999 /* iTermAccessibilitySelectionReplacement.swift */,
 				549AB34D98B0F7595015C26B /* iTermAutoresizingFloorAuditor.swift */,
+				9079FD5CC4CD8874C1EB3A56 /* iTermTabSwitcher.swift */,
 			);
 			path = TerminalView;
 			sourceTree = "<group>";
@@ -13489,6 +13633,7 @@
 				A6EC8054281C852200493544 /* NSAttributedString+iTerm.swift */,
 				A615829D2E5E78D80094B718 /* TabularFormatter.swift */,
 				0B909F947250B4FBA741BC52 /* LocalizedUnitFormatter.swift */,
+				FB849D15C563BC85AC9FC4B8 /* UILanguageCase.swift */,
 			);
 			path = Formatting;
 			sourceTree = "<group>";
@@ -14574,6 +14719,7 @@
 				A446BD7ECEC99A42DD383E59 /* CCStatusHookCommand.swift */,
 				78369949C86466303F34E966 /* ClaudeInteractivity.swift */,
 				1C9FCD67A328BE0D26CB3D57 /* PTYSession+ClaudeInteractivity.swift */,
+				1663D08B7D59827B98BB8ACE /* ClaudeCodeStatusOverlay.swift */,
 			);
 			path = ClaudeCode;
 			sourceTree = "<group>";
@@ -15364,6 +15510,7 @@
 				9946FFB23BB5ECE2EDCA77F6 /* iTermTabGroup.swift */,
 				842E85C7646AD1CE30E147AD /* iTermTabGroupContiguity.swift */,
 				F4EF5664748E7D360CA86213 /* iTermTabGroupOrdering.swift */,
+				B20DCBB1EE6BF0CDB52AAA56 /* iTermTabGroupNesting.swift */,
 			);
 			path = TabGroups;
 			sourceTree = "<group>";
@@ -17223,11 +17370,47 @@
 			hasScannedForEncodings = 1;
 			knownRegions = (
 				"zh-Hans",
+				"zh-Hant",
 				"pt-BR",
 				de,
 				ja,
 				ru,
 				ko,
+				es,
+				fr,
+				it,
+				tr,
+				pl,
+				vi,
+				nl,
+				sv,
+				da,
+				nb,
+				fi,
+				cs,
+				sk,
+				sl,
+				hr,
+				hu,
+				ro,
+				el,
+				uk,
+				id,
+				ms,
+				hi,
+				th,
+				ca,
+				"yue-Hans",
+				"en-GB",
+				"en-AU",
+				"en-CA",
+				"en-IN",
+				"fr-CA",
+				"es-419",
+				"zh-HK",
+				"pt-PT",
+				"en-PH",
+				"es-US",
 				en,
 				Base,
 			);
@@ -17861,6 +18044,37 @@
 				718A1744F0690B2555C115C8 /* challenge-frame-detection.js in Resources */,
 				66ACA31A7AD33D24EE498F7C /* ai-models.json in Resources */,
 				3EB88252C886C05D366D3A5A /* repl_banner-pt-BR.txt in Resources */,
+				922305886078B0369CEB6655 /* repl_banner-es.txt in Resources */,
+				9EF0BE79D0A18F6B6433E07F /* repl_banner-fr.txt in Resources */,
+				B44D0D7352607791E4D1D141 /* repl_banner-zh-Hant.txt in Resources */,
+				0CCB6CA85B2F71B032F49D68 /* repl_banner-it.txt in Resources */,
+				3195EB4B8AA7757F9735F900 /* repl_banner-vi.txt in Resources */,
+				09B54583D7F5F5703EB5F42D /* repl_banner-pl.txt in Resources */,
+				7C7C9B9A1AF5807BF4330BE1 /* repl_banner-es-US.txt in Resources */,
+				A925928BCBEAC8411FBB87EB /* repl_banner-pt-PT.txt in Resources */,
+				880E17828056F9DC0BEA5693 /* repl_banner-zh-HK.txt in Resources */,
+				B43B43937FD66132223ECFFD /* repl_banner-es-419.txt in Resources */,
+				7E7753E38AC20B4FD465724E /* repl_banner-fr-CA.txt in Resources */,
+				444F4AA2E53DFA72B0A325FA /* repl_banner-yue-Hans.txt in Resources */,
+				C3DBE2B50D21732A6AD8820F /* repl_banner-ca.txt in Resources */,
+				F436CF6211CB48F69E1523DC /* repl_banner-th.txt in Resources */,
+				21B9E02F4AC3DBD7611315B2 /* repl_banner-hi.txt in Resources */,
+				3AFC3E0372DCE4325FA0D664 /* repl_banner-ms.txt in Resources */,
+				F392E2ADBB8AB2B37CF7C99C /* repl_banner-id.txt in Resources */,
+				017B5DFFA44D729B54AB95AE /* repl_banner-uk.txt in Resources */,
+				1DC5312DF14675F63EBBE151 /* repl_banner-el.txt in Resources */,
+				1D2995D53ED99C175716A0C1 /* repl_banner-ro.txt in Resources */,
+				C3B82B04CABE36C49A081F2A /* repl_banner-hu.txt in Resources */,
+				F2B32064BCE978CBCAA227BC /* repl_banner-hr.txt in Resources */,
+				DF29493C78B185BA65EC7734 /* repl_banner-sl.txt in Resources */,
+				3EDE547BE2E08BB9E37F90FB /* repl_banner-sk.txt in Resources */,
+				D4DE93BD6B88AB4A92450872 /* repl_banner-cs.txt in Resources */,
+				19F32F25B7612BA98BFAEBDA /* repl_banner-fi.txt in Resources */,
+				14616FF34FF283465B828031 /* repl_banner-nb.txt in Resources */,
+				63EFFFE511163DBEAF85FE65 /* repl_banner-da.txt in Resources */,
+				3FBA8E06F48A4E3B256CCABA /* repl_banner-sv.txt in Resources */,
+				DC5583C79FE518A9E1DE97DC /* repl_banner-nl.txt in Resources */,
+				9C5EF877A91BD339866A092E /* repl_banner-tr.txt in Resources */,
 				65B1B9DF105B29AAF3D6D77F /* companion-browser-editing.js in Resources */,
 				640AE7AAB1BDCC09B531A3AC /* it2.py in Resources */,
 				923F4778B3116EBDC9D56980 /* it2_git_state.py in Resources */,
@@ -18561,6 +18775,37 @@
 				BCED56C0C7BC4730A6B05159 /* Localizable.xcstrings in Resources */,
 				E0674A4A31C8440A9DF370CD /* InfoPlist.xcstrings in Resources */,
 				498710E58A37DCA1EC3BB12C /* repl_banner-pt-BR.txt in Resources */,
+				D3BCFD44EDD5D29A47EBB177 /* repl_banner-es.txt in Resources */,
+				87E6D376E84D876F7489A18E /* repl_banner-fr.txt in Resources */,
+				CE7CC731CB8B32F4A1D41DC9 /* repl_banner-zh-Hant.txt in Resources */,
+				2877EF037945DD91E2FA6876 /* repl_banner-it.txt in Resources */,
+				DDF7515C2047CBD594C8E494 /* repl_banner-vi.txt in Resources */,
+				D12A1458C128178184A90834 /* repl_banner-pl.txt in Resources */,
+				D60F9E1ABC3B87F6572B474B /* repl_banner-es-US.txt in Resources */,
+				B6D89774C33A65184589974A /* repl_banner-pt-PT.txt in Resources */,
+				7E5030965C8A3E35069B6986 /* repl_banner-zh-HK.txt in Resources */,
+				8105EDD85B93831A8840FF66 /* repl_banner-es-419.txt in Resources */,
+				F5BAFC2D639ECC38E4BAAFCB /* repl_banner-fr-CA.txt in Resources */,
+				9B4A77C45871B86EB20209F3 /* repl_banner-yue-Hans.txt in Resources */,
+				8CEF9EEA5C67B0288258224A /* repl_banner-ca.txt in Resources */,
+				EAA6041F4D4233891031C99F /* repl_banner-th.txt in Resources */,
+				5798F1D146A7E0F9FEDD71A0 /* repl_banner-hi.txt in Resources */,
+				D4DC87490034AA77F3E968E2 /* repl_banner-ms.txt in Resources */,
+				5165E32CBB1437C6EF514BA7 /* repl_banner-id.txt in Resources */,
+				77FFACA59E8DA48F8DBD657D /* repl_banner-uk.txt in Resources */,
+				D9C27C2E38D6D58DD4D124DD /* repl_banner-el.txt in Resources */,
+				D745F682CD352F81542FADF2 /* repl_banner-ro.txt in Resources */,
+				E5FF5F73DAF49793AB8FA2B9 /* repl_banner-hu.txt in Resources */,
+				5C4F9345F20FD2BB3CB01CCE /* repl_banner-hr.txt in Resources */,
+				ED0C522015C4B03995AA64BF /* repl_banner-sl.txt in Resources */,
+				04943ACE973D42C6B85461E9 /* repl_banner-sk.txt in Resources */,
+				C2C3939C4441240F86361833 /* repl_banner-cs.txt in Resources */,
+				EB1C2E4CAAB6837B9A7971B2 /* repl_banner-fi.txt in Resources */,
+				5BF8DA367920D5CEBC3E0519 /* repl_banner-nb.txt in Resources */,
+				4196347B187776F2B0591B88 /* repl_banner-da.txt in Resources */,
+				FF2650F78E4451DA58A55EE3 /* repl_banner-sv.txt in Resources */,
+				1553CAA7DDFE419BFA5297CC /* repl_banner-nl.txt in Resources */,
+				71EBDA870F768D613C38493D /* repl_banner-tr.txt in Resources */,
 				D40FA74614B9343BFA69E64D /* companion-browser-editing.js in Resources */,
 				1CFBC8DDC0F47C682E8BA689 /* it2.py in Resources */,
 				72386C923E6555FC1BEE219E /* it2_git_state.py in Resources */,
@@ -20612,6 +20857,13 @@
 				9310AD39287478C20BA12921 /* iTermAppDockPlacementStore.swift in Sources */,
 				1D54529CD652A7A098EBA0A0 /* iTermAppDockHeaderGesture.swift in Sources */,
 				01BB239D89DA410DABC7126D /* iTermAppDockHeaderView.swift in Sources */,
+				D7BEED2BBCFDBE57CF0A6022 /* AIModelListDiscovery.swift in Sources */,
+				DA15C6ED3B5E1F6F74357D16 /* iTermEventTapBookkeeping.swift in Sources */,
+				2683D27699B9CA4F714C7FAA /* WorkgroupPeerStartingDirectory.swift in Sources */,
+				DC4B81183B28F3C6A956519D /* iTermTabSwitcher.swift in Sources */,
+				DE99387F4738F705DB245E77 /* UILanguageCase.swift in Sources */,
+				A62305DD709AEA800869BF10 /* ClaudeCodeStatusOverlay.swift in Sources */,
+				7F21CC66F413DBE8E2306AF2 /* iTermTabGroupNesting.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -21714,7 +21966,6 @@
 				USER_HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/sources",
 					"$(SRCROOT)/ThirdParty",
-					"$(PROJECT_DIR)/ThirdParty/adblock-rust/include",
 				);
 			};
 			name = Beta;
@@ -21747,7 +21998,6 @@
 				USER_HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/sources",
 					"$(SRCROOT)/ThirdParty",
-					"$(PROJECT_DIR)/ThirdParty/adblock-rust/include",
 				);
 			};
 			name = Nightly;
@@ -23159,7 +23409,6 @@
 				SWIFT_VERSION = 6.0;
 				USER_HEADER_SEARCH_PATHS = (
 					"$(CONFIGURATION_TEMP_DIR)/iTerm2SharedARC.build/DerivedSources",
-					"$(PROJECT_DIR)/ThirdParty/adblock-rust/include",
 				);
 				VALID_ARCHS = "$(ARCHS_STANDARD)";
 				WARNING_CFLAGS = (
@@ -23245,7 +23494,6 @@
 				USER_HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/SearchableComboListView",
 					"$(PROJECT_DIR)/ThirdParty/libsixel/include",
-					"$(PROJECT_DIR)/ThirdParty/adblock-rust/include",
 				);
 				VALID_ARCHS = "$(ARCHS_STANDARD)";
 				WARNING_CFLAGS = (
@@ -23594,7 +23842,6 @@
 				USER_HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/SearchableComboListView",
 					"$(PROJECT_DIR)/ThirdParty/libsixel/include",
-					"$(PROJECT_DIR)/ThirdParty/adblock-rust/include",
 				);
 				VALID_ARCHS = "$(ARCHS_STANDARD)";
 				WARNING_CFLAGS = (
@@ -23675,7 +23922,6 @@
 				USER_HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/SearchableComboListView",
 					"$(PROJECT_DIR)/ThirdParty/libsixel/include",
-					"$(PROJECT_DIR)/ThirdParty/adblock-rust/include",
 				);
 				VALID_ARCHS = "$(ARCHS_STANDARD)";
 				WARNING_CFLAGS = (
@@ -23758,7 +24004,6 @@
 				USER_HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/SearchableComboListView",
 					"$(PROJECT_DIR)/ThirdParty/libsixel/include",
-					"$(PROJECT_DIR)/ThirdParty/adblock-rust/include",
 				);
 				VALID_ARCHS = "$(ARCHS_STANDARD)";
 				WARNING_CFLAGS = (
@@ -24837,7 +25082,6 @@
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/iTerm2.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/iTerm2";
 				USER_HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/ThirdParty",
-					"$(PROJECT_DIR)/ThirdParty/adblock-rust/include",
 					"$(PROJECT_DIR)/ThirdParty/libgit2/include",
 				);
 			};
@@ -24924,7 +25168,6 @@
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/iTerm2.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/iTerm2";
 				USER_HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/ThirdParty",
-					"$(PROJECT_DIR)/ThirdParty/adblock-rust/include",
 					"$(PROJECT_DIR)/ThirdParty/libgit2/include",
 				);
 			};
@@ -25011,7 +25254,6 @@
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/iTerm2.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/iTerm2";
 				USER_HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/ThirdParty",
-					"$(PROJECT_DIR)/ThirdParty/adblock-rust/include",
 					"$(PROJECT_DIR)/ThirdParty/libgit2/include",
 				);
 			};
@@ -25098,7 +25340,6 @@
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/iTerm2.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/iTerm2";
 				USER_HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/ThirdParty",
-					"$(PROJECT_DIR)/ThirdParty/adblock-rust/include",
 					"$(PROJECT_DIR)/ThirdParty/libgit2/include",
 				);
 			};
@@ -25168,7 +25409,6 @@
 				SWIFT_VERSION = 6.0;
 				USER_HEADER_SEARCH_PATHS = (
 					"$(CONFIGURATION_TEMP_DIR)/iTerm2SharedARC.build/DerivedSources",
-					"$(PROJECT_DIR)/ThirdParty/adblock-rust/include",
 				);
 				VALID_ARCHS = "$(ARCHS_STANDARD)";
 				WARNING_CFLAGS = (
@@ -25234,7 +25474,6 @@
 				SWIFT_VERSION = 6.0;
 				USER_HEADER_SEARCH_PATHS = (
 					"$(CONFIGURATION_TEMP_DIR)/iTerm2SharedARC.build/DerivedSources",
-					"$(PROJECT_DIR)/ThirdParty/adblock-rust/include",
 				);
 				VALID_ARCHS = "$(ARCHS_STANDARD)";
 				WARNING_CFLAGS = (
@@ -25300,7 +25539,6 @@
 				SWIFT_VERSION = 6.0;
 				USER_HEADER_SEARCH_PATHS = (
 					"$(CONFIGURATION_TEMP_DIR)/iTerm2SharedARC.build/DerivedSources",
-					"$(PROJECT_DIR)/ThirdParty/adblock-rust/include",
 				);
 				VALID_ARCHS = "$(ARCHS_STANDARD)";
 				WARNING_CFLAGS = (
@@ -25695,7 +25933,6 @@
 				USER_HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/sources",
 					"$(SRCROOT)/ThirdParty",
-					"$(PROJECT_DIR)/ThirdParty/adblock-rust/include",
 				);
 			};
 			name = Development;
@@ -25728,7 +25965,6 @@
 				USER_HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/sources",
 					"$(SRCROOT)/ThirdParty",
-					"$(PROJECT_DIR)/ThirdParty/adblock-rust/include",
 				);
 			};
 			name = Deployment;
@@ -25928,7 +26164,7 @@
 			repositoryURL = "https://github.com/jpsim/Yams.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 5.0.0;
+				minimumVersion = 6.2.2;
 			};
 		};
 		A6891DCC2818621900751F40 /* XCRemoteSwiftPackageReference "SwiftyMarkdown" */ = {

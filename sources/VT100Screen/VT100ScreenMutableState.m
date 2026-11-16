@@ -452,6 +452,25 @@ static BOOL sOSC7DisabledWarningShown;
     }];
 }
 
+// Like addPausedNoDelegateSideEffect: but urgent, and the side effect runs even if self has been
+// freed by the time it executes. Use it for a block that must always run, such as one that
+// settles a promise.
+- (void)addUrgentPausedNoDelegateSideEffect:(void (^)(iTermTokenExecutorUnpauser *unpauser))sideEffect
+                                       name:(NSString *)name {
+    DLog(@"[side effects] %@ Add urgent paused no-delegate side effect %@", self.config.sessionGuid, name);
+    __weak __typeof(self) weakSelf = self;
+    iTermTokenExecutorUnpauser *unpauser = [_tokenExecutor pause];
+    [_tokenExecutor addUrgentSideEffect:^{
+        __strong __typeof(self) strongSelf = weakSelf;
+        if (!strongSelf) {
+            DLog(@"[side effects] %@ running after dealloc", name);
+            sideEffect(unpauser);
+            return;
+        }
+        [strongSelf performPausedNoDelegateSideEffect:unpauser block:sideEffect name:name];
+    }];
+}
+
 - (void)addIntervalTreeSideEffect:(void (^)(id<iTermIntervalTreeObserver> observer))sideEffect
                              name:(NSString *)name {
     DLog(@"[side effects] %@ Add interval tree side effect %@", self.config.sessionGuid, name);
@@ -1022,7 +1041,12 @@ static BOOL sOSC7DisabledWarningShown;
          self.currentGrid.cursorY,
          self.currentGrid.cursorY + [self.linebuffer numLinesWithWidth:self.currentGrid.size.width]);
 
-    assert(self.terminal);
+    if (!self.terminal) {
+        // The session terminated (which disables the terminal) after something like a
+        // disconnection banner was queued to be appended.
+        DLog(@"Not appending because the terminal is disabled");
+        return;
+    }
 
     // Check if we can use the preconverted data from the parser thread.
     BOOL needColorFixup = NO;
@@ -2698,6 +2722,12 @@ void VT100ScreenEraseCell(screen_char_t *sct,
     NSArray<iTermTuple<Interval *, id<IntervalTreeObject>> *> *updates =
     [objects mapWithBlock:^id _Nullable(id<IntervalTreeObject> note) {
         if (note.entry.interval.location < screenInterval.location) {
+            if (screenInterval.location < 1) {
+                // The object starts at a negative location and the screen starts at 0, so
+                // the truncated interval would end before 0, which Interval can't represent.
+                DLog(@"Not truncating %@ because the screen starts at %@", note, @(screenInterval.location));
+                return nil;
+            }
             // Truncate note so that it ends just before screen.
             // Subtract 1 because end coord is inclusive of y even when x is 0.
             Interval *newInterval = [Interval intervalWithLocation:note.entry.interval.location
@@ -4062,7 +4092,7 @@ void VT100ScreenEraseCell(screen_char_t *sct,
     __weak __typeof(self) weakSelf = self;
     DLog(@"%p: Performing async working directory fetch for %@", self, fetches);
     dispatch_queue_t queue = _queue;
-    [delegate screenGetWorkingDirectoryWithCompletion:^(NSString *path) {
+    [delegate screenGetWorkingDirectoryForReportedChange:NO completion:^(NSString *path) {
         DLog(@"%p: Async update got %@ for %@", weakSelf, path, fetches);
         if (path) {
             dispatch_async(queue, ^{
@@ -4101,7 +4131,22 @@ void VT100ScreenEraseCell(screen_char_t *sct,
                   onAbsLine:(long long)absLine
                      pushed:(BOOL)pushed
                       token:(id<iTermOrderedToken>)token {
-    DLog(@"%p: setWorkingDirectory:%@ onLine:%lld token:%@", self, workingDirectory, absLine, token);
+    [self setWorkingDirectory:workingDirectory
+                    onAbsLine:absLine
+                       pushed:pushed
+                     locality:VT100ScreenWorkingDirectoryLocalityUnverified
+                        token:token];
+}
+
+// locality says whether the directory is known to be on this machine. The remote host on `line`
+// can't tell you that: a report that names no host inherits the previous one.
+- (void)setWorkingDirectory:(NSString *)workingDirectory
+                  onAbsLine:(long long)absLine
+                     pushed:(BOOL)pushed
+                   locality:(VT100ScreenWorkingDirectoryLocality)locality
+                      token:(id<iTermOrderedToken>)token {
+    DLog(@"%p: setWorkingDirectory:%@ onLine:%lld locality:%@ token:%@",
+         self, workingDirectory, absLine, @(locality), token);
     const int line = [self workingDirectoryLineForAbsLine:absLine];
     if (line < 0) {
         return;
@@ -4172,19 +4217,23 @@ void VT100ScreenEraseCell(screen_char_t *sct,
                                                remoteHost:remoteHost
                                             withDirectory:workingDirectory
                                                  pushType:pushType
+                                                 locality:locality
                                                  accepted:accepted];
     } name:@"set pwd 2"];
 }
 
 - (void)currentDirectoryReallyDidChangeTo:(NSString *)dir
                                 onAbsLine:(long long)cursorAbsLine
+                                 locality:(VT100ScreenWorkingDirectoryLocality)locality
                                completion:(void (^)(void))completion {
-    DLog(@"currentDirectoryReallyDidChangeTo:%@ onAbsLine:%@", dir, @(cursorAbsLine));
+    DLog(@"currentDirectoryReallyDidChangeTo:%@ onAbsLine:%@ locality:%@",
+         dir, @(cursorAbsLine), @(locality));
     self.shouldExpectWorkingDirectoryUpdates = YES;
     BOOL willChange = ![dir isEqualToString:[self workingDirectoryOnLine:cursorAbsLine - self.cumulativeScrollbackOverflow]];
     [self setWorkingDirectory:dir
                     onAbsLine:cursorAbsLine
                        pushed:YES
+                     locality:locality
                         token:nil];
     if (willChange) {
         int line = [self numberOfScrollbackLines] + self.cursorY;
@@ -4211,7 +4260,17 @@ void VT100ScreenEraseCell(screen_char_t *sct,
 
 - (void)currentDirectoryDidChangeTo:(NSString *)dir
                          completion:(void (^)(void))completion {
-    DLog(@"%p: currentDirectoryDidChangeTo:%@", self, dir);
+    [self currentDirectoryDidChangeTo:dir verifiedLocalhost:NO completion:completion];
+}
+
+// verifiedLocalhost describes a non-empty `dir`, which is reported as
+// VT100ScreenWorkingDirectoryLocalityVerifiedReport or VT100ScreenWorkingDirectoryLocalityUnverified
+// (see setWorkingDirectory:onAbsLine:pushed:locality:token:). An empty `dir` is filled in by a poll
+// and reported as VT100ScreenWorkingDirectoryLocalityLocalPoll.
+- (void)currentDirectoryDidChangeTo:(NSString *)dir
+                  verifiedLocalhost:(BOOL)verifiedLocalhost
+                         completion:(void (^)(void))completion {
+    DLog(@"%p: currentDirectoryDidChangeTo:%@ verifiedLocalhost:%@", self, dir, @(verifiedLocalhost));
     [self addSideEffect:^(id<VT100ScreenDelegate>  _Nonnull delegate) {
         [delegate screenSetPreferredProxyIcon:nil]; // Clear current proxy icon if exists.
     } name:@"pwd did change 1"];
@@ -4219,7 +4278,10 @@ void VT100ScreenEraseCell(screen_char_t *sct,
     const int cursorLine = self.numberOfLines - self.height + self.currentGrid.cursorY;
     const long long cursorAbsLine = self.cumulativeScrollbackOverflow + cursorLine;
     if (dir.length) {
-        [self currentDirectoryReallyDidChangeTo:dir onAbsLine:cursorAbsLine completion:completion];
+        [self currentDirectoryReallyDidChangeTo:dir
+                                      onAbsLine:cursorAbsLine
+                                       locality:verifiedLocalhost ? VT100ScreenWorkingDirectoryLocalityVerifiedReport : VT100ScreenWorkingDirectoryLocalityUnverified
+                                     completion:completion];
         return;
     }
 
@@ -4228,7 +4290,7 @@ void VT100ScreenEraseCell(screen_char_t *sct,
     id<iTermOrderedToken> token = [self.currentDirectoryDidChangeOrderEnforcer newToken];
     DLog(@"Fetching directory asynchronously with token %@", token);
     [self addSideEffect:^(id<VT100ScreenDelegate>  _Nonnull delegate) {
-        [delegate screenGetWorkingDirectoryWithCompletion:^(NSString *workingDirectory) {
+        [delegate screenGetWorkingDirectoryForReportedChange:YES completion:^(NSString *workingDirectory) {
             DLog(@"For token %@, the working directory is %@", token, workingDirectory);
             if (![token commit]) {
                 return;
@@ -4236,8 +4298,13 @@ void VT100ScreenEraseCell(screen_char_t *sct,
             [weakSelf performBlockAsynchronously:^(VT100Terminal * _Nonnull terminal,
                                                    VT100ScreenMutableState * _Nonnull mutableState,
                                                    id<VT100ScreenDelegate>  _Nonnull delegate) {
+                // The directory came from polling. The tracker treated the report as a push
+                // when the poll was requested and recorded the poll when it finished, so it
+                // must neither poll again nor treat this as a report it should trust over
+                // later polls.
                 [mutableState currentDirectoryReallyDidChangeTo:workingDirectory
                                                       onAbsLine:cursorAbsLine
+                                                       locality:VT100ScreenWorkingDirectoryLocalityLocalPoll
                                                      completion:completion];
             }];
         }];
@@ -4875,7 +4942,9 @@ static NSString *iTermOSC7MachineIDFromComponents(NSURLComponents *components) {
 
     __weak __typeof(self) weakSelf = self;
     void (^completion)(void) = ^{
-        [weakSelf setPathFromURL:path fromShellIntegration:fromShellIntegration];
+        [weakSelf setPathFromURL:path
+            fromShellIntegration:fromShellIntegration
+               verifiedLocalhost:machineLocality == VT100RemoteHostLocalityLocalhost];
     };
     if (host.length > 0 || user != nil || machineLocality != VT100RemoteHostLocalityUnknown) {
         [self setHost:host
@@ -4951,7 +5020,9 @@ static NSString *iTermOSC7MachineIDFromComponents(NSURLComponents *components) {
     } name:@"warn OSC 7 disabled"];
 }
 
-- (void)setPathFromURL:(NSString *)path fromShellIntegration:(BOOL)fromShellIntegration {
+- (void)setPathFromURL:(NSString *)path
+  fromShellIntegration:(BOOL)fromShellIntegration
+     verifiedLocalhost:(BOOL)verifiedLocalhost {
     if (path.length == 0) {
         // A pathless OSC 7 (file://user@host, or a peer that dropped the path)
         // carries no directory. Don't fall into currentDirectoryDidChangeTo:'s
@@ -4961,7 +5032,7 @@ static NSString *iTermOSC7MachineIDFromComponents(NSURLComponents *components) {
         return;
     }
     __weak __typeof(self) weakSelf = self;
-    [self currentDirectoryDidChangeTo:path completion:^{
+    [self currentDirectoryDidChangeTo:path verifiedLocalhost:verifiedLocalhost completion:^{
         __strong __typeof(self) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -7765,7 +7836,7 @@ lengthExcludingInBandSignaling:data.length
     if (path) {
         // A restore (conductor unhook), not a live shell-integration OSC 7: no
         // 133;A follows, so establish the prompt as before.
-        [self setPathFromURL:path fromShellIntegration:NO];
+        [self setPathFromURL:path fromShellIntegration:NO verifiedLocalhost:NO];
     }
 }
 
@@ -8241,12 +8312,19 @@ lengthExcludingInBandSignaling:data.length
 
 #pragma mark - iTermTriggerScopeProvider
 
-- (void)performBlockWithScope:(void (^)(iTermVariableScope *scope, id<iTermObject> object))block {
+- (void)performBlockWithScope:(void (^)(iTermVariableScope * _Nullable scope, id<iTermObject> _Nullable object))block {
     // Urgent because token execution is paused until this runs. At a non-visible session's
     // side-effect period that could take a second, and while paused the session stops reading
     // input, which for a tmux pane stalls every session. Issue 13160.
-    [self addUrgentPausedSideEffect:^(id<VT100ScreenDelegate> delegate, iTermTokenExecutorUnpauser *unpauser) {
+    // A no-delegate side effect, because the block must run even if the session has gone away:
+    // it settles a promise, which asserts if it is freed unsettled.
+    __weak __typeof(self) weakSelf = self;
+    [self addUrgentPausedNoDelegateSideEffect:^(iTermTokenExecutorUnpauser *unpauser) {
         [iTermGCD assertMainQueueSafe];
+        id<VT100ScreenDelegate> delegate = weakSelf.sideEffectPerformer.sideEffectPerformingScreenDelegate;
+        if (!delegate) {
+            DLog(@"No delegate to provide a variable scope for a trigger");
+        }
         block([delegate triggerSideEffectVariableScope], delegate);
         [unpauser unpause];
     } name:@"trigger requested scope"];

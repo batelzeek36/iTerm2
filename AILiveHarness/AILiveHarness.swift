@@ -157,6 +157,16 @@ final class AILiveHarness: XCTestCase {
         "gemini-3.7-flash",
     ]
 
+    // Models whose refusal fixtures are deliberately not captured, so the refusal prompt is never
+    // sent to them. Sending prompts designed to be refused got the account behind our OpenAI key
+    // flagged for abuse, so new models don't get one. AIMetadataFixtureCoverageTest accepts these
+    // as fixtureExempt the same way it accepts the sets above.
+    static let refusalNotCaptured: Set<String> = [
+        "gpt-6.1-terra",
+        "gemini-4-argon",
+        "claude-haiku-5-5",
+    ]
+
     private static func models(forVendor vendor: String) -> [String] {
         if let raw = loadConfig()?["\(vendor.uppercased())_MODELS"], !raw.isEmpty {
             return splitModels(raw)
@@ -356,7 +366,9 @@ final class AILiveHarness: XCTestCase {
     private static func refusalModels(forVendor vendor: String,
                                       streaming: Bool,
                                       mode: RefusalMode) -> [String] {
-        let models = Self.models(forVendor: vendor)
+        let models = Self.models(forVendor: vendor).filter {
+            !Self.refusalNotCaptured.contains($0)
+        }
         guard mode == .missing else {
             return models
         }
@@ -1512,6 +1524,65 @@ final class AILiveHarness: XCTestCase {
         let key = try keyOrSkip(Self.loadKeys().openAI, vendor: "openai")
         runSyntheticSmoke(model: Self.syntheticChatCompletionsModel,
                           apiKey: key, streaming: true)
+    }
+    // A base URL (no endpoint path) must reach the real API: LLMProvider
+    // appends the API's endpoint at request time (issue 11509).
+    func test_openai_chatCompletions_baseURL_smoke() throws {
+        let key = try keyOrSkip(Self.loadKeys().openAI, vendor: "openai")
+        var model = Self.syntheticChatCompletionsModel
+        model.url = "https://api.openai.com/v1"
+        runSyntheticSmoke(model: model, apiKey: key, streaming: true)
+    }
+    func test_anthropic_baseURL_smoke() throws {
+        let key = try keyOrSkip(Self.loadKeys().anthropic, vendor: "anthropic")
+        try runBaseURLSmoke(modelName: "claude-haiku-4-5",
+                            url: "https://api.anthropic.com/v1/",
+                            api: .anthropic,
+                            vendor: .anthropic,
+                            apiKey: key,
+                            tag: "anthropic/baseURL")
+    }
+    // An ANTHROPIC_BASE_URL-style gateway base, to which /v1/messages is added.
+    func test_deepseek_anthropicGateway_baseURL_smoke() throws {
+        let key = try keyOrSkip(Self.loadKeys().deepSeek, vendor: "deepseek")
+        try runBaseURLSmoke(modelName: "deepseek-chat",
+                            url: "https://api.deepseek.com/anthropic",
+                            api: .anthropic,
+                            vendor: .deepSeek,
+                            apiKey: key,
+                            tag: "deepseek/anthropicGateway")
+    }
+    // Gemini's OpenAI-compatible base, which ends in /v1beta/openai/.
+    func test_gemini_openAIGateway_baseURL_smoke() throws {
+        let key = try keyOrSkip(Self.loadKeys().gemini, vendor: "gemini")
+        try runBaseURLSmoke(modelName: "gemini-3-flash-preview",
+                            url: "https://generativelanguage.googleapis.com/v1beta/openai/",
+                            api: .chatCompletions,
+                            vendor: .gemini,
+                            apiKey: key,
+                            tag: "gemini/openAIGateway")
+    }
+    private func runBaseURLSmoke(modelName: String,
+                                 url: String,
+                                 api: iTermAIAPI,
+                                 vendor: iTermAIVendor,
+                                 apiKey: String,
+                                 tag: String) throws {
+        let model = AIMetadata.Model(name: modelName,
+                                     contextWindowTokens: 128_000,
+                                     maxResponseTokens: 8_192,
+                                     url: url,
+                                     api: api,
+                                     features: [.streaming],
+                                     vendor: vendor)
+        let result = try AILiveDriver.run(model: model,
+                                          apiKey: apiKey,
+                                          messages: [LLM.Message(role: .user, content: "Reply with exactly the single word: PINEAPPLE")],
+                                          streaming: true,
+                                          scenarioTag: "smoke",
+                                          test: self)
+        XCTAssertTrue(result.finalText.uppercased().contains("PINEAPPLE"),
+                      "[\(tag)] unexpected response: \(result.finalText)")
     }
     func test_openai_chatCompletions_toolCall_nonStreaming() throws {
         let key = try keyOrSkip(Self.loadKeys().openAI, vendor: "openai")

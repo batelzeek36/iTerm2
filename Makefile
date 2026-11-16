@@ -548,7 +548,7 @@ fatopenssl: force
 	cd submodules/openssl/ && lipo -create -output libssl.a build-x86/libssl.a build-arm/libssl.a
 	cd submodules/openssl; rm -rf build-fat; mkdir build-fat; mkdir build-fat/lib; cp -R include/ build-fat/include/
 	cp submodules/openssl/libcrypto.a submodules/openssl/libssl.a submodules/NMSSH/NMSSH-OSX/Libraries/lib
-	cp submodules/openssl/*a submodules/openssl/build-fat/lib
+	cp submodules/openssl/*.a submodules/openssl/build-fat/lib
 else
 fatopenssl: force
 	echo Begin building openssl for $(NATIVE_ARCH)
@@ -662,8 +662,9 @@ cc-status: force
 
 libgit2: force
 	mkdir -p submodules/libgit2/build
-	PATH=/usr/local/bin:${PATH} cd submodules/libgit2/build && ${CMAKE} -DBUILD_CLAR=OFF -DCMAKE_IGNORE_PREFIX_PATH=/opt/homebrew -DBUILD_SHARED_LIBS=OFF -DCMAKE_OSX_ARCHITECTURES="$(CMAKE_ARCHS)" -DCMAKE_OSX_DEPLOYMENT_TARGET="$(DEPLOYMENT_TARGET)" -DCMAKE_INSTALL_PREFIX=../../../ThirdParty/libgit2 -DUSE_SSH=OFF -DUSE_ICONV=OFF ..
+	PATH=/usr/local/bin:${PATH} cd submodules/libgit2/build && ${CMAKE} -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=OFF -DBUILD_CLI=OFF -DUSE_HTTPS=SecureTransport -DCMAKE_IGNORE_PREFIX_PATH=/opt/homebrew -DBUILD_SHARED_LIBS=OFF -DCMAKE_OSX_ARCHITECTURES="$(CMAKE_ARCHS)" -DCMAKE_OSX_DEPLOYMENT_TARGET="$(DEPLOYMENT_TARGET)" -DCMAKE_INSTALL_PREFIX=../../../ThirdParty/libgit2 -DUSE_SSH=OFF -DUSE_ICONV=OFF ..
 	PATH=/usr/local/bin:${PATH} cd submodules/libgit2/build && ${CMAKE} --build . --target install --parallel "$$(sysctl -n hw.ncpu)"
+	rm -rf ThirdParty/libgit2/lib/cmake
 
 sparkle: force
 	rm -rf ThirdParty/Sparkle.framework
@@ -685,6 +686,9 @@ paranoid-CoreParse: force
 
 paranoid-SwiftyMarkdown: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" SwiftyMarkdown
+
+paranoid-Highlightr: force
+	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" Highlightr
 
 paranoid-deps: force
 	tools/check-submodule-cleanliness

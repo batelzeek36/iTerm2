@@ -59,6 +59,7 @@
 #import "PseudoTerminal.h"
 #import "PseudoTerminalRestorer.h"
 #import "QLPreviewPanel+iTerm.h"
+#import "TmuxController.h"
 #import "TmuxControllerRegistry.h"
 #import "TmuxDashboardController.h"
 #import "ToastWindowController.h"
@@ -382,6 +383,16 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
 
 #pragma mark - Interface Builder
 
+// -[NSMenu removeItem:] throws when the item is nil. An outlet can be nil when the binary loads a
+// MainMenu nib that predates the item, which has been seen in the field right after an update.
+- (void)removeMenuItemFromItsMenu:(NSMenuItem *)item {
+    if (!item) {
+        DLog(@"Not removing a nil menu item");
+        return;
+    }
+    [item.menu removeItem:item];
+}
+
 - (void)awakeFromNib {
     [ArchivesMenuBuilder setShared:[[ArchivesMenuBuilder alloc] initWithMenuItem:_archivesMenuItem]];
 
@@ -394,7 +405,7 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
     [self addMenuItemView:labelTrackView toMenu:viewMenu title:NSLocalizedStringWithDefaultValue(@"ViewMenu.CurrentTabColor", nil, [NSBundle mainBundle], @"Current Tab Color", @"View menu item label for the current tab color picker")];
 
     if (![iTermTipController sharedInstance]) {
-        [_showTipOfTheDay.menu removeItem:_showTipOfTheDay];
+        [self removeMenuItemFromItsMenu:_showTipOfTheDay];
     }
 
     if ([iTermAdvancedSettingsModel showHintsInSplitPaneMenuItems]) {
@@ -420,12 +431,12 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
     }
 #endif
     if (isReleaseBuild) {
-        [_iterm2Menu removeItem:_captureGPUFrameMenuItem];
+        [self removeMenuItemFromItsMenu:_captureGPUFrameMenuItem];
     }
 #if !ITERM_DEBUG
     // "Check Settings Control Truncation" is a Development-only diagnostic; drop it
     // from the menu in every build that doesn't define ITERM_DEBUG.
-    [_iterm2Menu removeItem:_checkSettingsTruncationMenuItem];
+    [self removeMenuItemFromItsMenu:_checkSettingsTruncationMenuItem];
 #endif
 
     [[iTermBuriedSessions sharedInstance] setMenus:[NSArray arrayWithObjects:_buriedSessions, _statusIconBuriedSessions, nil]];
@@ -967,6 +978,17 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
     if (terminals.count > 0) {
         // The last window wasn't really closed, it was just the hotkey window getting ordered out or a window entering fullscreen.
         RLog(@"Not quitting automatically. Terminals are %@", terminals);
+        return NO;
+    }
+    PTYSession *buriedGateway = [[[iTermBuriedSessions sharedInstance] buriedSessions] objectPassingTest:^BOOL(PTYSession *session, NSUInteger index, BOOL *stop) {
+        return session.isTmuxGateway && session.tmuxController.exitExpected;
+    }];
+    if (buriedGateway && [iTermPreferences boolForKey:kPreferenceKeyAutoHideTmuxClientSession]) {
+        // Closing the last tmux window can detach or kill the session before its %exit has been
+        // handled. When it is, the gateway gets unburied into a window, so don't quit out from
+        // under it. A gateway that is merely buried (e.g., its windows were hidden) won't come
+        // back on its own, so it doesn't count. Issue 12644.
+        RLog(@"Not quitting because buried tmux gateway %@ will be restored when tmux exits", buriedGateway);
         return NO;
     }
     if (!userHasInteractedWithAnySession_) {
@@ -2265,6 +2287,9 @@ static iTermKeyEventReplayer *gReplayer;
     if ([components.path isEqualToString:@"pop-channel"]) {
         [self popChannel:url];
     }
+    if ([components.path isEqualToString:@"unpin-hotkey-window"]) {
+        [self unpinHotkeyWindowFromURL:url];
+    }
     return NO;
 }
 
@@ -2297,6 +2322,39 @@ static iTermKeyEventReplayer *gReplayer;
     [[iTermChatWindowController instanceShowingErrors:YES] showChatWindow];
     [[iTermChatWindowController instanceShowingErrors:NO] selectChatWithID:chatID];
 
+}
+
+- (void)unpinHotkeyWindowFromURL:(NSURL *)url {
+    NSURLComponents *components = [[[NSURLComponents alloc] initWithURL:url resolvingAgainstBaseURL:NO] autorelease];
+    NSString *guid = nil;
+    NSString *token = nil;
+    for (NSURLQueryItem *item in components.queryItems) {
+        if ([item.name isEqualToString:@"s"] && !guid) {
+            guid = item.value;
+        } else if ([item.name isEqualToString:@"t"]) {
+            token = item.value;
+        }
+    }
+    if (!guid) {
+        return;
+    }
+    if (![[NSWorkspace sharedWorkspace] it_checkToken:token]) {
+        DLog(@"Bad token for unpin-hotkey-window");
+        return;
+    }
+    PTYSession *session = [[iTermController sharedInstance] sessionWithGUID:guid];
+    if (!session) {
+        DLog(@"No session with guid %@", guid);
+        return;
+    }
+    PseudoTerminal *term = [PseudoTerminal castFrom:session.delegate.realParentWindow];
+    iTermProfileHotKey *profileHotkey = [[iTermHotKeyController sharedInstance] profileHotKeyForWindowController:term];
+    if (!profileHotkey) {
+        DLog(@"Session %@ is not in a hotkey window", guid);
+        return;
+    }
+    DLog(@"Unpin hotkey window for session %@", guid);
+    profileHotkey.autoHides = YES;
 }
 
 - (void)popChannel:(NSURL *)url {
@@ -3556,6 +3614,11 @@ static iTermKeyEventReplayer *gReplayer;
                                                       sessions:restorableSession.sessions
                                                       archives:archives
                                       forceOpeningHotKeyWindow:YES];
+                if (!term) {
+                    // -[iTermController addTerminalWindow:] throws on nil.
+                    DLog(@"Failed to restore window for undo close");
+                    break;
+                }
                 [[iTermController sharedInstance] addTerminalWindow:term];
                 term.terminalGuid = restorableSession.terminalGuid;
                 break;

@@ -1589,8 +1589,6 @@ additionalWordCharacters:(NSString *)additionalWordCharacters
           linesDropped:(int *)linesDroppedOut
              unlimited:(BOOL)unlimited {
     [self performBlockWithJoinedThreads:^(VT100Terminal *terminal, VT100ScreenMutableState *mutableState, id<VT100ScreenDelegate> delegate) {
-        NSDictionary *extra;
-
         // Interval tree
         long long capturedIntervalOffset;
         if ([iTermAdvancedSettingsModel useNewContentFormat]) {
@@ -1598,7 +1596,6 @@ additionalWordCharacters:(NSString *)additionalWordCharacters
             const int linesDroppedForBrevity = [self numberOfLinesDroppedWhenEncodingModernFormatWithEncoder:encoder
                                                                                               intervalOffset:&intervalOffset
                                                                                                    unlimited:unlimited];
-            extra = @{};
             capturedIntervalOffset = intervalOffset;
             if (linesDroppedOut) {
                 *linesDroppedOut = linesDroppedForBrevity;
@@ -1608,9 +1605,6 @@ additionalWordCharacters:(NSString *)additionalWordCharacters
             const int linesDroppedForBrevity = [self numberOfLinesDroppedWhenEncodingLegacyFormatWithEncoder:encoder
                                                                                               intervalOffset:&intervalOffset];
             capturedIntervalOffset = intervalOffset;
-            extra = @{
-                kScreenStateCursorCoord: VT100GridCoordToDictionary(_state.primaryGrid.cursor),
-            };
             if (linesDroppedOut) {
                 *linesDroppedOut = linesDroppedForBrevity;
             }
@@ -1622,7 +1616,6 @@ additionalWordCharacters:(NSString *)additionalWordCharacters
         [encoder encodeDictionaryWithKey:kScreenStateKey
                               generation:iTermGenerationAlwaysEncode
                                    block:^BOOL(id<iTermEncoderAdapter>  _Nonnull encoder) {
-            [encoder mergeDictionary:extra];
             NSDictionary *dict =
             @{ kScreenStateTabStopsKey: [_state.tabStops allObjects] ?: @[],
                kScreenStateTerminalKey: _state.terminalState ?: @{},
@@ -2381,9 +2374,15 @@ launchCoprocessWithCommand:(NSString *)command
 
 #pragma mark - iTermTriggerScopeProvider
 
-- (void)performBlockWithScope:(void (^)(iTermVariableScope *scope, id<iTermObject> object))block {
-    // For event triggers on main thread, we can call directly
-    block([self.delegate triggerSideEffectVariableScope], (id<iTermObject>)self.delegate);
+- (void)performBlockWithScope:(void (^)(iTermVariableScope * _Nullable scope, id<iTermObject> _Nullable object))block {
+    // For event triggers on main thread, we can call directly. PTYSession holds event trigger
+    // fires until the screen has a delegate and stops them when it terminates, but if one gets
+    // through anyway the block gets a nil scope and rejects the interpolated value.
+    id<VT100ScreenDelegate> delegate = self.delegate;
+    if (!delegate) {
+        RLog(@"No delegate to provide a variable scope for an event trigger");
+    }
+    block([delegate triggerSideEffectVariableScope], (id<iTermObject>)delegate);
 }
 
 - (id<iTermTriggerCallbackScheduler>)triggerCallbackScheduler {
