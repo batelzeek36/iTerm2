@@ -145,6 +145,35 @@ func install(_ t: Target, _ id: String) throws {
     try? register.run()
     register.waitUntilExit()
     log("installed \(id) at \(t.installedApp)")
+    if t.key == claudeDock.key {
+        refreshClaudeDockProfile()
+    }
+}
+
+// The panel's profile depends on what the installed Claude Dock can do (its header's Mini/Tall
+// button): rewrite it now, while Claude Dock is not running, from the tree the staged build came
+// from. A failure only leaves the previous profile in place.
+func refreshClaudeDockProfile() {
+    let writer = "\(builds)/worktree/zach/profiles/claude-over-wow.py"
+    guard FileManager.default.fileExists(atPath: writer) else {
+        log("Claude Dock: no profile writer at \(writer); profile left as it was")
+        return
+    }
+    let task = Process()
+    let pipe = Pipe()
+    task.executableURL = URL(fileURLWithPath: "/usr/bin/python3")
+    task.arguments = ["-I", writer, "--refresh"]
+    task.standardOutput = pipe
+    task.standardError = pipe
+    do {
+        try task.run()
+    } catch {
+        log("Claude Dock: profile writer did not start: \(error.localizedDescription)")
+        return
+    }
+    let output = String(decoding: pipe.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
+    task.waitUntilExit()
+    log("Claude Dock profile (exit \(task.terminationStatus)): \(output.trimmingCharacters(in: .whitespacesAndNewlines))")
 }
 
 // Returns true when a build was installed.

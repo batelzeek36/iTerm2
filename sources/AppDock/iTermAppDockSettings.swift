@@ -14,6 +14,12 @@
 //    "Dock Layout"               fallback placement in UI units: Point, Relative Point, X, Y,
 //                                Width, Height, UI Scale, Reference Height
 //    "Dock Font Size"            terminal font size in UI units (default 14.75)
+//    "Dock Tall Height"          height in UI units of the Tall size (default 560): the slot's
+//                                anchor, width and bottom edge, grown upward. The header button
+//                                switches Mini (the slot) <-> Tall; never shorter than the slot
+//    "Dock Default Size"         "Mini" (default) or "Tall": the size until the button is used;
+//                                after that the user's choice and his dragged offset are kept
+//                                per profile in the NoSync user defaults (AppDockPlacementStore)
 //    "Dock Header Title"         gold label in the header (default: the profile name)
 //    "Dock Header Subtitle"      muted label after it
 //    "Dock Accent Color", "Dock Header Text Color", "Dock Header Faint Color",
@@ -34,12 +40,18 @@ struct AppDockSettings: Equatable {
     static let elvUICharacterKey = "Dock ElvUI Character"
     static let layoutKey = "Dock Layout"
     static let fontSizeKey = "Dock Font Size"
+    static let tallHeightKey = "Dock Tall Height"
+    static let defaultSizeKey = "Dock Default Size"
     static let headerTitleKey = "Dock Header Title"
     static let headerSubtitleKey = "Dock Header Subtitle"
     static let accentColorKey = "Dock Accent Color"
     static let headerTextColorKey = "Dock Header Text Color"
     static let headerFaintColorKey = "Dock Header Faint Color"
     static let headerBackgroundColorKey = "Dock Header Background Color"
+
+    // Tall reaches from ElvUI's right-chat slot (4 units up) to just under the quest tracker on
+    // a 0.63 UI scale (Zach, 2026-11-15: "it needs to cover the rest of the blank area").
+    static let defaultTallHeight: CGFloat = 560
 
     struct Colors: Equatable {
         // Approved comp, 2026-11-14: gold accents, violet-grey muted text.
@@ -58,6 +70,9 @@ struct AppDockSettings: Equatable {
     var elvUIPanel: ElvUIChatPanelSide
     var elvUICharacter: String?
     var fallbackLayout: AppDockLayout
+    // Height of the Tall size, in UI units.
+    var tallHeight: CGFloat
+    var defaultSize: AppDockPanelSize
     var headerTitle: String
     var headerSubtitle: String
     var colors: Colors
@@ -83,6 +98,11 @@ struct AppDockSettings: Equatable {
             fontSize = n
         }
         fallbackLayout = Self.layout(profile[Self.layoutKey] as? [String: Any], fontSize: fontSize)
+        tallHeight = Self.defaultTallHeight
+        if let h = Self.number(profile[Self.tallHeightKey]), h > 0, h < 10_000 {
+            tallHeight = h
+        }
+        defaultSize = Self.string(profile[Self.defaultSizeKey]).flatMap(AppDockPanelSize.init(name:)) ?? .mini
         headerTitle = Self.string(profile[Self.headerTitleKey]) ?? Self.string(profile[KEY_NAME]) ?? "Claude"
         headerSubtitle = Self.string(profile[Self.headerSubtitleKey]) ?? ""
         var colors = Colors()

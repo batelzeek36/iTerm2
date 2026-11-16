@@ -19,7 +19,8 @@ committed work gets built.
   472 x (236 + 23) units at UIScale 0.63, 4 units in from the bottom-right corner, text 14.75
   units. Look per the approved comp: ElvUI flat panel (1 pt black edge, faint inner
   highlight, gold "Claude" tab header), violet text, gold accents, 60% backdrop, no title
-  bar, shadow or rounded corners.
+  bar, shadow or rounded corners. (Since 2026-11-15 the WoW profile's accents are his mage
+  class blue #3fc7eb, and the panel starts Tall: see the Mini / Tall button below.)
   - Hotkey (the profile's, Ctrl-Opt-Cmd-C): panel not focused = show it and give it the
     keyboard (WoW stays the active app; the panel is a non-activating panel). Panel focused
     = keyboard back to WoW, panel stays. Shift-Ctrl-Opt-Cmd-C = hide/show; the claude
@@ -29,14 +30,43 @@ committed work gets built.
     scrolls in its slot reach the game (a bag opened there) and never hand the keyboard to
     Claude. Only the header takes a click: it focuses the panel. Focused, the terminal takes
     its own clicks; clicking the game gives the keyboard back to the game.
+  - **Mini / Tall button** (2026-11-15, Zach: "a button to grow taller or be mini"): the
+    small square at the header's right end, beside the hotkey hint. Mini = the slot exactly;
+    Tall = the same anchor and width, grown upward from the slot's bottom edge to the
+    profile's `"Dock Tall Height"` (560 units for WoW: up to just under the Questie
+    tracker). Text size never changes, Tall only adds rows. Look: ElvUI's flat corner
+    toggle (1 pt black edge, faint inner highlight), chevron pointing where the panel goes
+    (up = grow, down = shrink), lit class blue while Tall; on hover its edge turns class
+    blue and the hint names the action (“Grow taller” / “Back to mini”). Clicking it never
+    moves the keyboard: WoW keeps it (or the panel, if it had it); the header panel can't
+    become key. `"Dock Default Size"` (`Mini`/`Tall`) is the size until the first click.
+  - **Drag** (same day: "the window being draggable would be nice"): drag the header to
+    move the panel; a press that moves under 3 pt is still a click (focus). Dragging never
+    focuses. The offset is kept in UI units from the slot, so a moved panel follows WoW's
+    moves, resizes and UI scale exactly as the slot does, and it is kept inside the window
+    (the whole panel when it fits, else the header). While dragging, the slot shows like an
+    ElvUI mover (dim box, class-blue edge, “Snap back here”); within 12 pt of it the outline
+    jumps above the panel as a class-blue frame, the header says “Release to snap back”, and
+    letting go puts it exactly back. Way back from anywhere: **double-click the header**
+    (hovering a moved panel's header says “Double-click to snap back”; the first click of
+    the double click focuses the panel, like any header click).
+  - Size and offset are saved per profile GUID in this app's user defaults,
+    `NoSyncAppDockPanelPlacements` (Claude Dock: `~/Library/Preferences/ClaudeDock.plist`),
+    and survive restarts; they win over `"Dock Default Size"`. Reset by hand: quit Claude
+    Dock, `defaults delete ClaudeDock NoSyncAppDockPanelPlacements`.
+    Code: `iTermAppDockPlacement.swift` (pure math: tall layout, clamp, drag, snap, saved
+    form), `iTermAppDockHeaderGesture.swift` (click / drag / double click / button, the
+    hint), `iTermAppDockHeaderView.swift`, `iTermAppDockPlacementStore.swift`; tests
+    `ModernTests/AppDockPlacementTests.swift`.
   - ZachPaladin's `/zdock` (wow-forever-addons, dock.lua) empties the slot on the game's
     side: ElvUI's right chat hidden (its chat types join the main chat), its toggle parked,
     tooltips above the slot; `/zdock off` undoes it.
   - Visible only while WoW is frontmost or the panel has the keyboard; gone with WoW's
     window (created when it first appears; if claude exits, the next hotkey press or WoW
     window makes a new session). Never restored by window restoration.
-  - Never tiled or moved by anything but its anchor: no title bar, not movable, refuses the
-    Python API's set-frame, and any other move is undone. The window carries
+  - Never tiled or moved by anything but its anchor and his own header drag: no title bar,
+    not movable by the window server, refuses the Python API's set-frame, and any other move
+    is undone. The window carries
     `user.appDocked`, which `~/Library/Application Support/iTerm2/Scripts/AutoLaunch/auto_tile.py`
     skips (backup of the old script: `Scripts/auto_tile.py.bak-20261114`).
   - Following WoW uses Accessibility notifications (the fork has the grant) plus display-rate
@@ -93,6 +123,14 @@ committed work gets built.
     Documents box (the panel runs claude in `~/Documents/wow-forever-addons`). Recommended:
     System Settings > Privacy & Security > Accessibility > + > Claude Dock, then quit and
     reopen it (with the grant it follows WoW by notifications instead of polling at 10 Hz).
+  - Profile vs. build: `zach/profiles/claude-over-wow.py` writes the ElvUI slot + Tall
+    (`"Dock ElvUI SavedVariables"`, `"Dock Tall Height": 560`, `"Dock Default Size": "Tall"`)
+    only when the installed Claude Dock has the Mini/Tall button (its executable carries the
+    `Dock Tall Height` key); for an older build it writes the tall stopgap (no ElvUI file,
+    `"Dock Layout"` 472 x 560), byte for byte what that build already has. `--refresh` reruns
+    it only where Claude Dock is set up; `zach/install.sh` (every nightly's tools refresh)
+    and swap-on-quit (right after it installs a Claude Dock) call it, so the profile
+    switches by itself with the first build that has the button.
   - Not yet: its menus still say “About iTerm2” / “Quit iTerm2” (compiled nib strings).
 - Build-time only (zach/build.sh, never committed to upstream files): nightly channel plist
   (nightly-only features on), update feeds pointed at a dead local address so a stock build
