@@ -36,9 +36,20 @@ for script in update.sh xcode.sh; do
     mv -f "$BIN/$script.new" "$BIN/$script"
 done
 
+# Claude Dock's panel profile follows the installed Claude Dock: the header's Mini/Tall button needs
+# a build that has it, so the profile writer picks the ElvUI slot + Tall or the older tall stopgap
+# (zach/profiles/claude-over-wow.py). --refresh: only where Claude Dock is set up. Run after the
+# swap helper restarts: a Claude Dock the old helper installed before that is seen here, one
+# installed later is the new helper's (it refreshes the profile itself). A failure here never
+# holds back the tools.
+refresh_dock_profile() {
+    /usr/bin/python3 -I "$HERE/profiles/claude-over-wow.py" --refresh || echo "install.sh: Claude Dock profile not refreshed"
+}
+
 if [ "${1:-}" = "--tools-only" ]; then
     # Restart the helper on its new binary if it is loaded.
     launchctl kickstart -k "$GUI/com.zach.iterm2-fork-swap" 2>/dev/null || true
+    refresh_dock_profile
     echo "install.sh: tools refreshed"
     exit 0
 fi
@@ -49,4 +60,5 @@ for label in com.zach.iterm2-fork-swap com.zach.iterm2-fork-update; do
     launchctl bootout "$GUI/$label" 2>/dev/null || true
     launchctl bootstrap "$GUI" "$AGENTS/$label.plist"
 done
+refresh_dock_profile
 echo "install.sh: helper and LaunchAgents installed"

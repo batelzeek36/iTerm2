@@ -3,8 +3,17 @@
 Warcraft's ElvUI right-chat slot (fork feature sources/AppDock, see zach/README.md).
 
     zach/profiles/claude-over-wow.py            write ~/Library/Application Support/ClaudeDock/DynamicProfiles/claude-over-wow.json
+    zach/profiles/claude-over-wow.py --refresh  the same, but only if Claude Dock already has the profile
+                                                (zach/install.sh --tools-only and swap-on-quit use this)
     zach/profiles/claude-over-wow.py --test D   write a copy for a -suite test instance into D, running a
                                                 color replay instead of claude, on Ctrl-Opt-Cmd-J
+
+Mini/Tall (2026-11-15): the panel sits in ElvUI's right-chat slot (Mini) and its header button grows
+it upward to "Dock Tall Height" (Tall); it starts Tall. A Claude Dock built before that button knows
+neither, so for it this writes the old tall stopgap instead (the slot stretched to 560 units in
+"Dock Layout", no ElvUI file). Which one is decided by the installed Claude Dock itself: a build with
+the button carries the "Dock Tall Height" key. zach/install.sh --tools-only and swap-on-quit (after it
+installs a Claude Dock) run this again, so the profile switches over with the first build that has it.
 
 The panel runs in Claude Dock (zach/claude-dock), its own app, never in the main iTerm2: Claude
 Dock reads dynamic profiles from its suite's Application Support folder (the suite name comes
@@ -16,11 +25,16 @@ mode 1 "Chat dock"): violet text #cdb8ff, near-black backdrop at 60%. Accents we
 until 2026-11-15; now the mage class blue #3fc7eb (Zach: "match my class blue color that is my
 health bar"; ElvUI colors his health bar by class and records mage as 0.247/0.780/0.922).
 """
+import fcntl
 import json
 import os
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+
+CLAUDE_DOCK_EXECUTABLE = "/Applications/Claude Dock.app/Contents/MacOS/ClaudeDock"
+# The profile key that only a Claude Dock with the Mini/Tall button reads.
+TALL_SUPPORT_MARKER = b"Dock Tall Height"
 
 WOW = "/Applications/World of Warcraft/_forever_"
 ELVUI = WOW + "/WTF/Account/809277904#1/SavedVariables/ElvUI.lua"
@@ -108,7 +122,27 @@ ANSI = [
     "#6c5f9a", "#ffa8b8", "#c4eaf5", ACCENT_LIGHT, "#b6a6e6", "#ecc2f7", "#c4cff8", "#f1ebff",
 ]
 
-def profile(test):
+def installed_supports_tall():
+    """True when the installed Claude Dock has the Mini/Tall header button (it reads the
+    "Dock Tall Height" key, so the key's text is in its executable)."""
+    path = os.environ.get("CLAUDE_DOCK_EXECUTABLE", CLAUDE_DOCK_EXECUTABLE)
+    try:
+        with open(path, "rb") as f:
+            data = f.read()
+    except OSError:
+        return False
+    return TALL_SUPPORT_MARKER in data
+
+# ElvUI's right-chat slot as Zach has it (RightChatMover BOTTOMRIGHT -4,4; panel 472 x 236 + the
+# 23-unit datatext bar; UI scale 0.63). The panel reads the live values from ElvUI.lua; this copy is
+# the fallback when that file can't be read.
+SLOT = {"Point": "BOTTOMRIGHT", "Relative Point": "BOTTOMRIGHT", "X": -4, "Y": 4,
+        "Width": 472, "Height": 259, "UI Scale": 0.63}
+# Tall reaches up to just under the Questie tracker (~632 units up). Zach 11-15 9 PM: "it needs to be
+# taller ... cover the rest of the blank area, or i cant read it".
+TALL_HEIGHT = 560
+
+def profile(test, tall_button=True):
     p = {
         "Name": "Claude over WoW",
         "Guid": "zach-claude-over-wow-0001",
@@ -126,14 +160,13 @@ def profile(test):
         "Dock To App Bundle ID": "com.blizzard.worldofwarcraft",
         "Dock To App Path": WOW + "/World of Warcraft.app",
         "Dock Window Title": "World of Warcraft",
-        # TALL for now (Zach 11-15 9 PM: "it needs to be taller ... cover the rest of the blank area,
-        # or i cant read it"): ElvUI's right-chat slot (RightChatMover BOTTOMRIGHT -4,4, 472 wide,
-        # UI scale 0.63) stretched up from 259 to 560 units, which ends under the Questie tracker
-        # (~632 units up). With no "Dock ElvUI SavedVariables" the panel uses this layout. The
-        # mini/tall header button and dragging come with the next fork build; until then this
-        # entry is the switch: put back "Dock ElvUI SavedVariables": ELVUI for the old mini panel.
-        "Dock Layout": {"Point": "BOTTOMRIGHT", "Relative Point": "BOTTOMRIGHT", "X": -4, "Y": 4,
-                        "Width": 472, "Height": 560, "UI Scale": 0.63},
+        # Mini = ElvUI's right-chat slot, read live from ElvUI.lua (SLOT if it can't be read); the
+        # header button grows it upward to TALL_HEIGHT. Starts Tall; after the first click Claude
+        # Dock remembers his choice and any drag (its NoSync defaults), not this file.
+        "Dock ElvUI SavedVariables": ELVUI,
+        "Dock Layout": dict(SLOT),
+        "Dock Tall Height": TALL_HEIGHT,
+        "Dock Default Size": "Tall",
         "Dock ElvUI Panel": "RightChat",
         "Dock Header Title": "Claude",
         "Dock Header Subtitle": "wow-forever",
@@ -187,6 +220,12 @@ def profile(test):
     }
     for i, hex_rgb in enumerate(ANSI):
         p["Ansi %d Color" % i] = color(hex_rgb)
+    if not tall_button:
+        # The stopgap for a Claude Dock without the button: no ElvUI file, the slot stretched to
+        # the tall height. Same keys in the same order as before the button existed, so the
+        # profile it already has is rewritten byte for byte (no reload).
+        del p["Dock ElvUI SavedVariables"], p["Dock Tall Height"], p["Dock Default Size"]
+        p["Dock Layout"]["Height"] = TALL_HEIGHT
     if test:
         p["Command"] = test["command"]
         p["HotKey Key Code"] = 38
@@ -210,14 +249,38 @@ def main():
     if len(sys.argv) == 3 and sys.argv[1] == "--test":
         out_dir = sys.argv[2]
         test = {"command": os.path.join(out_dir, "..", "replay.sh")}
-    elif len(sys.argv) == 1:
-        out_dir = os.path.expanduser("~/Library/Application Support/%s/DynamicProfiles" % claude_dock_suite())
+        # A test instance runs the build under test, which has the button.
+        tall_button = True
+    elif len(sys.argv) == 1 or sys.argv[1:] == ["--refresh"]:
+        out_dir = os.environ.get("CLAUDE_OVER_WOW_OUT_DIR") or os.path.expanduser(
+            "~/Library/Application Support/%s/DynamicProfiles" % claude_dock_suite())
         test = None
+        tall_button = None  # decided under the lock, below
     else:
         sys.exit(__doc__)
-    os.makedirs(out_dir, exist_ok=True)
     path = os.path.join(out_dir, "claude-over-wow.json")
-    text = json.dumps({"Profiles": [profile(test)]}, indent=2, ensure_ascii=False) + "\n"
+    if sys.argv[1:] == ["--refresh"] and not os.path.exists(path):
+        print("Claude Dock has no claude-over-wow profile (not set up); nothing to refresh")
+        return
+    os.makedirs(out_dir, exist_ok=True)
+    # swap-on-quit (right after installing a Claude Dock) and zach/install.sh can run this at the
+    # same moment. One at a time, each looking at the installed Claude Dock only once it holds the
+    # lock, so the run that comes last always describes the build that is there. The lock file is
+    # beside the profiles folder, never in it.
+    with open(os.path.join(os.path.dirname(os.path.abspath(out_dir)), ".claude-over-wow.lock"), "w") as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            print("waiting for another write of the profile", flush=True)
+            fcntl.flock(lock, fcntl.LOCK_EX)
+        if tall_button is None:
+            tall_button = installed_supports_tall()
+        write(out_dir, path, test, tall_button)
+
+def write(out_dir, path, test, tall_button):
+    print("Claude Dock %s the Mini/Tall button: %s" % (
+        "has" if tall_button else "lacks", "ElvUI slot + Tall" if tall_button else "tall stopgap"))
+    text = json.dumps({"Profiles": [profile(test, tall_button)]}, indent=2, ensure_ascii=False) + "\n"
     try:
         with open(path) as f:
             if f.read() == text:
