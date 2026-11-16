@@ -143,13 +143,15 @@ def main():
     force, dry = "--force" in args, "--dry-run" in args
     c = conf()
     suite, bundle_id = c["SUITE"], c["BUNDLE_ID"]
-    if not dry and claude_dock_running(c["EXECUTABLE"]):
-        sys.exit("seed-prefs: %s is running; quit it first (it would write its settings back on quit)" % c["APP_NAME"])
+    # Reading is safe while Claude Dock runs; only a write needs it quit. So a re-run of
+    # install.sh with Claude Dock open (it already has settings) goes on to the other steps.
     existing = export(suite)
     if existing and not force:
         print("seed-prefs: %s already has settings (%d keys); left as they are (--force replaces them)"
               % (c["APP_NAME"], len(existing)))
         return
+    if not dry and claude_dock_running(c["EXECUTABLE"]):
+        sys.exit("seed-prefs: %s is running; quit it first (it would write its settings back on quit)" % c["APP_NAME"])
     main_values = export(MAIN_DOMAIN)
     if not main_values:
         sys.exit("seed-prefs: the main iTerm2 has no settings to copy")
