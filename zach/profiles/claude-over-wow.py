@@ -12,7 +12,9 @@ from zach/claude-dock/claude-dock.conf). The main iTerm2 must not have this prof
 fight Claude Dock for the hotkey.
 
 The look is the approved comp of 2026-11-14 (wow-forever-addons/mac/claude-overlay-comp,
-mode 1 "Chat dock"): violet text #cdb8ff, gold accents #f3cd5a, near-black backdrop at 60%.
+mode 1 "Chat dock"): violet text #cdb8ff, near-black backdrop at 60%. Accents were gold #f3cd5a
+until 2026-11-15; now the mage class blue #3fc7eb (Zach: "match my class blue color that is my
+health bar"; ElvUI colors his health bar by class and records mage as 0.247/0.780/0.922).
 """
 import json
 import os
@@ -29,24 +31,26 @@ def color(hex_rgb):
     return {"Red Component": ((v >> 16) & 255) / 255, "Green Component": ((v >> 8) & 255) / 255,
             "Blue Component": (v & 255) / 255, "Alpha Component": 1, "Color Space": "sRGB"}
 
-VIOLET, GOLD, BACKDROP = "#cdb8ff", "#f3cd5a", "#060607"
+VIOLET, BACKDROP = "#cdb8ff", "#060607"
+ACCENT = "#3fc7eb"        # mage class color (RAID_CLASS_COLORS as ElvUI records it)
+ACCENT_LIGHT = "#95e0f4"  # shimmer steps and strings, a lighter step of the same blue
 
 # Claude Code's dark theme (2.1.325) paints these in 24-bit color, as text and as backgrounds;
 # in this panel they become the comp's palette. Claude Code's own settings, and every other
-# session, are untouched. Diffs stay add/remove: added lines on dark gold, removed on plum.
+# session, are untouched. Diffs stay add/remove: added lines on dark blue, removed on plum.
 REMAP = {
     # text
-    "#d77757": GOLD,       # claude: the accent orange (bullets, spinner, Clawd)
-    "#eb9f7f": "#f8dd8c",  # claudeShimmer
-    "#4eba65": GOLD,       # success
+    "#d77757": ACCENT,       # claude: the accent orange (bullets, spinner, Clawd)
+    "#eb9f7f": ACCENT_LIGHT,  # claudeShimmer
+    "#4eba65": ACCENT,       # success
     "#ffffff": VIOLET,     # text
     "#999999": "#9a88d0",  # inactive -> muted violet
     "#c1c1c1": "#b6a6e6",  # inactiveShimmer
     "#505050": "#6c5f9a",  # subtle -> faint violet
     "#888888": "#5f5582",  # promptBorder
     "#a6a6a6": "#7a6fa0",  # promptBorderShimmer
-    "#b1b9f9": GOLD,       # permission / suggestion / remember: the prompt that needs him
-    "#cfd7ff": "#f8dd8c",  # permissionShimmer
+    "#b1b9f9": ACCENT,       # permission / suggestion / remember: the prompt that needs him
+    "#cfd7ff": ACCENT_LIGHT,  # permissionShimmer
     "#93a5ff": "#b6a6e6",  # claudeBlue (system spinner)
     "#b1c3ff": VIOLET,     # claudeBlueShimmer
     "#fd5db1": "#e0a8f0",  # bashBorder: pink -> orchid
@@ -54,11 +58,11 @@ REMAP = {
     "#4782c8": "#9a88d0",  # ide
     "#00cccc": "#a9b8f2",  # background tasks: teal -> periwinkle
     "#ff6b80": "#f08ca0",  # error: a softer rose
-    "#ffc107": "#f2b45a",  # warning: amber, kept apart from the gold
-    "#ffdf39": "#f8dd8c",  # warningShimmer
+    "#ffc107": "#f2b45a",  # warning: amber, kept apart from the blue
+    "#ffdf39": ACCENT_LIGHT,  # warningShimmer
     "#7ab4e8": "#a9b8f2",  # briefLabelYou
-    "#ff7814": GOLD,       # fastMode
-    "#ffa546": "#f8dd8c",  # fastModeShimmer
+    "#ff7814": ACCENT,       # fastMode
+    "#ffa546": ACCENT_LIGHT,  # fastModeShimmer
     "#505370": "#4a4366",  # rate_limit_empty
     "#af87ff": VIOLET,     # autoAccept / skill / merged ("accept edits on")
     "#d0b4ff": "#e4daff",  # autoAcceptShimmer
@@ -66,14 +70,14 @@ REMAP = {
     "#f8f8f2": VIOLET,     # plain code
     "#f92672": "#e0a8f0",  # keywords -> orchid
     "#a6e22e": "#a9b8f2",  # function names -> periwinkle
-    "#e6db74": "#f8dd8c",  # strings -> light gold
-    "#ae81ff": GOLD,       # numbers / constants
-    "#be84ff": GOLD,       # numbers in diff lines
+    "#e6db74": ACCENT_LIGHT,  # strings -> light blue
+    "#ae81ff": ACCENT,       # numbers / constants
+    "#be84ff": ACCENT,       # numbers in diff lines
     "#66d9ef": "#b6a6e6",  # storage / types -> lavender
     "#fd971f": "#f2c46a",  # parameters -> soft amber
     "#75715e": "#6c5f9a",  # comments -> faint violet
     "#dc5a5a": "#f08ca0",  # diff "-" marker -> rose
-    "#50c850": GOLD,       # diff "+" marker -> gold
+    "#50c850": ACCENT,       # diff "+" marker -> class blue
     # backgrounds (drawn at the panel's 40% see-through like its own backdrop)
     "#373737": "#2b2342",  # userMessageBackground: past prompts on a violet slab
     "#464646": "#372d55",  # userMessageBackgroundHover
@@ -81,14 +85,14 @@ REMAP = {
     "#264f78": "#3d3459",  # selectionBg
     "#413c41": "#33283f",  # bashMessageBackgroundColor
     "#374146": "#2d2a45",  # memoryBackgroundColor
-    "#225c2b": "#4b3f16",  # diffAdded: dark gold
+    "#225c2b": "#133c46",  # diffAdded: dark blue
     "#7a2936": "#5a2347",  # diffRemoved: plum
-    "#47584a": "#3b3424",  # diffAddedDimmed
+    "#47584a": "#1f3238",  # diffAddedDimmed
     "#69484d": "#46303f",  # diffRemovedDimmed
-    "#38a660": "#8c7424",  # diffAddedWord: brighter gold
+    "#38a660": "#206476",  # diffAddedWord: brighter blue
     "#b3596b": "#93407a",  # diffRemovedWord: brighter plum
-    "#022800": "#3e3414",  # transcript diff, added line: dark gold
-    "#044700": "#6b571b",  # transcript diff, added word
+    "#022800": "#12343e",  # transcript diff, added line: dark blue
+    "#044700": "#1c5666",  # transcript diff, added word
     "#3d0100": "#4a1d3b",  # transcript diff, removed line: plum
     "#5c0200": "#7a3466",  # transcript diff, removed word
 }
@@ -97,11 +101,11 @@ REMAP = {
 # colors are animated steps around Claude Code's orange, and would otherwise flicker orange.
 REMAP_TOLERANCE = 32
 
-# The 16 ANSI colors in the same violet + gold family, for anything that prints basic ANSI
+# The 16 ANSI colors in the same violet + class-blue family, for anything that prints basic ANSI
 # (his status line: cyan directory, magenta model, yellow cost).
 ANSI = [
-    "#1e1a2b", "#f08ca0", "#e2d08e", GOLD, "#9a88d0", "#e0a8f0", "#a9b8f2", VIOLET,
-    "#6c5f9a", "#ffa8b8", "#f0e2a8", "#f8dd8c", "#b6a6e6", "#ecc2f7", "#c4cff8", "#f1ebff",
+    "#1e1a2b", "#f08ca0", "#9fd6e6", ACCENT, "#9a88d0", "#e0a8f0", "#a9b8f2", VIOLET,
+    "#6c5f9a", "#ffa8b8", "#c4eaf5", ACCENT_LIGHT, "#b6a6e6", "#ecc2f7", "#c4cff8", "#f1ebff",
 ]
 
 def profile(test):
@@ -115,7 +119,7 @@ def profile(test):
         # inside a Claude Code session (`open` passes the caller's environment) made the panel's
         # claude a "child session" of that one (its session id, no transcript saving; 11-15).
         # The login shell then sets whatever Zach's rc files set.
-        "Command": "/bin/zsh -fc 'unset -m \"CLAUDE*\"; exec /bin/zsh -lic \"cd ~/Documents/wow-forever-addons && exec claude\"'",
+        "Command": "/bin/zsh -fc 'unset -m \"CLAUDE*\"; exec /bin/zsh -lic \"cd ~/Documents/wow-forever-addons && exec claude --dangerously-skip-permissions\"'",
         "Custom Directory": "Yes",
         "Working Directory": WORKDIR,
         # The fork docks this profile; an unmodified iTerm2 ignores the Dock keys.
@@ -153,14 +157,16 @@ def profile(test):
         "Cursor Text Color": color(BACKDROP),
         "Selection Color": color("#3d3459"),
         "Selected Text Color": color("#f1ebff"),
-        "Link Color": color(GOLD),
+        "Link Color": color(ACCENT),
+        # The header dot and "Claude" title (sources/AppDock defaults them to the old gold).
+        "Dock Accent Color": ACCENT,
         "Transparency": 0.4,
         "Blur": False,
         "Initial Use Transparency": True,
         "Minimum Contrast": 0,
         "Show Status Bar": False,
         # Default's purple progress line would cut across the header while claude works; the
-        # gold spinner line already says it is working.
+        # blue spinner line already says it is working.
         "Enable Progress Bars": False,
         "Silence Bell": True,
         "Visual Bell": False,
