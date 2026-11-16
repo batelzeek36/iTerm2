@@ -16,6 +16,12 @@
 //                   clicks (and scrolls) in its slot reach the game (bags open there); a
 //                   click on its header focuses it. With the keyboard, it takes clicks on
 //                   itself; clicking the game gives the keyboard back to the game.
+//    Size button    the square at the header's right end switches Mini (the slot) and Tall
+//                   (the slot grown upward). It never moves the keyboard.
+//    Drag           dragging the header moves the panel (the keyboard stays where it was);
+//                   the offset is kept in UI units from the slot, so the panel still follows
+//                   the target window. Dropped near the slot, or double-clicked, it goes back.
+//                   Size and offset survive restarts (AppDockPlacementStore).
 //
 
 import AppKit
@@ -39,6 +45,12 @@ final class AppDockController: NSObject {
     private var visibilityUpdateScheduled = false
     private var geometry: AppDockGeometry?
     private var appliedFontSize: CGFloat?
+    // Mini/Tall and where the user dragged the panel (saved per profile).
+    private var placement: AppDockPlacement
+    // The offset the panel is shown at: the placement's, kept inside the target window.
+    private var appliedOffset = CGVector.zero
+    // While the header is dragged: where the panel was when it began, and the scale then.
+    private var drag: (start: CGVector, pointsPerUnit: CGFloat)?
     private var appObservers = [NSObjectProtocol]()
     private var windowObservers = [NSObjectProtocol]()
     // A Dock-icon click waiting for the target app to become active before focusing the panel.
@@ -49,9 +61,20 @@ final class AppDockController: NSObject {
         self.settings = settings
         layout = settings.fallbackLayout
         tracker = AppDockTargetTracker(criteria: Self.criteria(settings))
+        placement = AppDockPlacementStore.placement(forGuid: settings.guid, defaultSize: settings.defaultSize)
         super.init()
-        chrome.headerView.onClick = { [weak self] in
+        let header = chrome.headerView
+        header.onClick = { [weak self] in
             self?.focusPanel()
+        }
+        header.onToggleSize = { [weak self] in
+            self?.toggleSize()
+        }
+        header.onBackToSlot = { [weak self] in
+            self?.moveBackToSlot()
+        }
+        header.onDrag = { [weak self] step in
+            self?.headerDragged(step)
         }
     }
 
@@ -93,6 +116,8 @@ final class AppDockController: NSObject {
         }
         let oldCriteria = Self.criteria(settings)
         settings = newSettings
+        // A new default size counts until the user picks one with the button.
+        placement = AppDockPlacementStore.placement(forGuid: newSettings.guid, defaultSize: newSettings.defaultSize)
         reloadLayout(force: true)
         registerHotKeys()
         if Self.criteria(newSettings) != oldCriteria {
@@ -471,6 +496,7 @@ final class AppDockController: NSObject {
     private func windowWillClose() {
         DLog("App dock: window closed")
         stopObservingWindow()
+        drag = nil
         detachChrome()
         term = nil
         creatingWindow = false
@@ -516,13 +542,17 @@ final class AppDockController: NSObject {
         }
         // WoW rewrites ElvUI.lua on /reload and logout; pick up a moved or resized chat panel.
         reloadLayout(force: false)
-        guard let g = AppDockGeometry(layout: layout,
+        let slot = sizedSlot()
+        let offset = AppDockPlacementMath.clampedOffset(placement.offset, slot: slot, contentRect: target.contentRect)
+        let backingScale = Self.backingScale(for: target.contentRect)
+        guard let g = AppDockGeometry(layout: AppDockPlacementMath.moved(slot, by: offset),
                                       contentRect: target.contentRect,
-                                      backingScale: Self.backingScale(for: target.contentRect)) else {
+                                      backingScale: backingScale) else {
             geometry = nil
             return
         }
         geometry = g
+        appliedOffset = offset
         applyFont(g.fontSize)
         if window.frame != g.terminalFrame {
             applyingFrame = true
@@ -530,6 +560,91 @@ final class AppDockController: NSObject {
             applyingFrame = false
         }
         chrome.apply(geometry: g, style: style())
+        updateSlotOutline(slot: slot, contentRect: target.contentRect, backingScale: backingScale, panelWindow: window)
+    }
+
+    // The slot (ElvUI's or the profile's) at the chosen size, before the user's offset.
+    private func sizedSlot() -> AppDockLayout {
+        return AppDockPlacementMath.sized(layout, size: placement.size, tallHeight: settings.tallHeight)
+    }
+
+    private var dragFeedback: AppDockDragFeedback {
+        guard let drag else {
+            return .none
+        }
+        return AppDockPlacementMath.snapsToSlot(appliedOffset, pointsPerUnit: drag.pointsPerUnit) ? .nearSlot : .away
+    }
+
+    private func updateSlotOutline(slot: AppDockLayout, contentRect: CGRect, backingScale: CGFloat, panelWindow: NSWindow) {
+        guard drag != nil,
+              let home = AppDockGeometry(layout: slot, contentRect: contentRect, backingScale: backingScale) else {
+            chrome.hideSlotOutline()
+            return
+        }
+        chrome.showSlotOutline(frame: home.panelFrame,
+                               style: AppDockSlotOutlineStyle(colors: settings.colors,
+                                                              fontSize: home.header.fontSize,
+                                                              nearSlot: dragFeedback == .nearSlot),
+                               panelWindow: panelWindow)
+    }
+
+    // MARK: - Size and position (header button, drag)
+
+    private func toggleSize() {
+        placement.size = placement.size.toggled
+        DLog("App dock: size is now \(placement.size.rawValue)")
+        savePlacement()
+        // The header moves out from under the pointer.
+        chrome.headerView.clearHover()
+        applyGeometry()
+    }
+
+    private func moveBackToSlot() {
+        guard placement.isMoved else {
+            return
+        }
+        DLog("App dock: back to the slot")
+        placement.offset = .zero
+        savePlacement()
+        applyGeometry()
+    }
+
+    private func headerDragged(_ step: AppDockHeaderDrag) {
+        switch step {
+        case .began:
+            guard let geometry else {
+                return
+            }
+            // From where it is shown, which a small window may have pushed in from the saved spot.
+            drag = (start: appliedOffset, pointsPerUnit: geometry.pointsPerUnit)
+            placement.offset = appliedOffset
+            applyGeometry()
+        case .moved(let delta):
+            guard let drag else {
+                return
+            }
+            placement.offset = AppDockPlacementMath.dragged(from: drag.start, by: delta, pointsPerUnit: drag.pointsPerUnit)
+            applyGeometry()
+            // Keep what is saved inside the window too, so a later bigger window does not
+            // throw the panel past where it was dropped.
+            placement.offset = appliedOffset
+        case .ended:
+            guard let drag else {
+                return
+            }
+            if AppDockPlacementMath.snapsToSlot(appliedOffset, pointsPerUnit: drag.pointsPerUnit) {
+                placement.offset = .zero
+            }
+            self.drag = nil
+            chrome.hideSlotOutline()
+            DLog("App dock: dropped at offset \(placement.offset)")
+            savePlacement()
+            applyGeometry()
+        }
+    }
+
+    private func savePlacement() {
+        AppDockPlacementStore.save(placement, forGuid: settings.guid)
     }
 
     private func applyFont(_ size: CGFloat) {
@@ -560,7 +675,10 @@ final class AppDockController: NSObject {
                                   subtitle: settings.headerSubtitle,
                                   hotKeyHint: hotKeyHint,
                                   colors: settings.colors,
-                                  backdrop: backdrop())
+                                  backdrop: backdrop(),
+                                  size: placement.size,
+                                  isMoved: placement.isMoved,
+                                  drag: dragFeedback)
     }
 
     // The terminal's background at its transparency, so the header matches the panel body.

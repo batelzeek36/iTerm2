@@ -79,16 +79,40 @@ struct AppDockLayout: Equatable {
     func pointsPerUnit(contentHeight: CGFloat) -> CGFloat {
         return contentHeight * uiScale / referenceHeight
     }
+
+    // The panel's outer frame on a target whose content area is `contentRect`, before it is
+    // snapped to device pixels. nil when the layout or the area is unusable.
+    func frame(in contentRect: CGRect) -> CGRect? {
+        guard isValid,
+              contentRect.width > 0, contentRect.height > 0,
+              contentRect.minX.isFinite, contentRect.minY.isFinite else {
+            return nil
+        }
+        let unit = pointsPerUnit(contentHeight: contentRect.height)
+        let width = size.width * unit
+        let height = size.height * unit
+        let anchor = relativePoint.position(in: contentRect)
+        let target = CGPoint(x: anchor.x + offset.dx * unit,
+                             y: anchor.y + offset.dy * unit)
+        let f = point.fraction
+        return CGRect(x: target.x - width * f.x, y: target.y - height * f.y, width: width, height: height)
+    }
 }
 
 // The chrome drawn around the terminal, measured from the comp: the header strip is
-// 1.95em tall in a font 1.12x the terminal font, with 1 pt black edges.
+// 1.95em tall in a font 1.12x the terminal font, with 1 pt black edges. The size button
+// (Mini <-> Tall, 2026-11-15) is a square at the right end, as far from the right edge as
+// from the top and bottom, like ElvUI's buttons tucked into a panel corner.
 struct AppDockHeaderMetrics: Equatable {
     var height: CGFloat
     var fontSize: CGFloat
     var horizontalPadding: CGFloat
     var gap: CGFloat
     var dotDiameter: CGFloat
+    var buttonSide: CGFloat
+    var buttonInset: CGFloat
+    // Between the hint and the size button.
+    var hintGap: CGFloat
 
     init(terminalFontSize: CGFloat, backingScale: CGFloat) {
         fontSize = terminalFontSize * 1.12
@@ -96,6 +120,26 @@ struct AppDockHeaderMetrics: Equatable {
         horizontalPadding = fontSize * 0.7
         gap = fontSize * 1.1
         dotDiameter = fontSize * 0.55
+        buttonSide = AppDockGeometry.snap(height * 0.68, scale: backingScale)
+        buttonInset = AppDockGeometry.snap((height - buttonSide) / 2, scale: backingScale)
+        hintGap = fontSize * 0.6
+    }
+
+    // The drawn button, in the header strip's own coordinates.
+    func sizeButtonFrame(in bounds: CGRect) -> CGRect {
+        return CGRect(x: bounds.maxX - buttonInset - buttonSide,
+                      y: bounds.minY + buttonInset,
+                      width: buttonSide,
+                      height: buttonSide)
+    }
+
+    // Where a press counts as the button: the full height of the strip from the right edge
+    // to as far left of the drawn square as the square is from the edge, so the corner is
+    // easy to hit and the rest of the strip stays the handle.
+    func sizeButtonHitFrame(in bounds: CGRect) -> CGRect {
+        let drawn = sizeButtonFrame(in: bounds)
+        let minX = drawn.minX - buttonInset
+        return CGRect(x: minX, y: bounds.minY, width: bounds.maxX - minX, height: bounds.height)
     }
 }
 
@@ -123,24 +167,14 @@ struct AppDockGeometry: Equatable {
 
     // Returns nil when the content area is too small to hold a panel.
     init?(layout: AppDockLayout, contentRect: CGRect, backingScale: CGFloat) {
-        guard layout.isValid,
-              contentRect.width > 0, contentRect.height > 0,
-              contentRect.minX.isFinite, contentRect.minY.isFinite else {
+        guard let frame = layout.frame(in: contentRect) else {
             return nil
         }
         let unit = layout.pointsPerUnit(contentHeight: contentRect.height)
-        let width = layout.size.width * unit
-        let height = layout.size.height * unit
-        let anchor = layout.relativePoint.position(in: contentRect)
-        let target = CGPoint(x: anchor.x + layout.offset.dx * unit,
-                             y: anchor.y + layout.offset.dy * unit)
-        let f = layout.point.fraction
-        let origin = CGPoint(x: target.x - width * f.x, y: target.y - height * f.y)
-
-        let minX = Self.snap(origin.x, scale: backingScale)
-        let minY = Self.snap(origin.y, scale: backingScale)
-        let maxX = Self.snap(origin.x + width, scale: backingScale)
-        let maxY = Self.snap(origin.y + height, scale: backingScale)
+        let minX = Self.snap(frame.minX, scale: backingScale)
+        let minY = Self.snap(frame.minY, scale: backingScale)
+        let maxX = Self.snap(frame.maxX, scale: backingScale)
+        let maxY = Self.snap(frame.maxY, scale: backingScale)
         panelFrame = CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
 
         let rawFont = layout.fontSize * unit
