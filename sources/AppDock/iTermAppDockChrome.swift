@@ -13,7 +13,9 @@
 //    - the header panel covers only the header strip: click = focus, drag = move, and the
 //      size button at its right end;
 //    - while the panel is dragged, the slot panel outlines where it lives, like an ElvUI mover
-//      (not a child window: it stays put while the panel moves).
+//      (not a child window: it stays put while the panel moves). It sits under the panel and
+//      never draws where the panel is, so nothing of it crosses the panel's text; within snap
+//      range the panel's own edge turns the accent instead.
 //
 
 import AppKit
@@ -30,6 +32,12 @@ struct AppDockChromeStyle: Equatable {
     // Dragged out of its slot (and not put back).
     var isMoved = false
     var drag: AppDockDragFeedback = .none
+
+    // The panel's outer edge: the accent while a drop would snap it back into its slot (the
+    // panel itself says so; the slot outline stays under it), else nil for the black edge.
+    var edgeAccent: AppDockRGBA? {
+        return drag == .nearSlot ? colors.accent : nil
+    }
 }
 
 enum AppDockDrawing {
@@ -76,6 +84,14 @@ final class AppDockEdgeView: NSView {
             }
         }
     }
+    // Set: the outer edge in this color instead of black (AppDockChromeStyle.edgeAccent).
+    var accent: AppDockRGBA? {
+        didSet {
+            if accent != oldValue {
+                needsDisplay = true
+            }
+        }
+    }
 
     override var isOpaque: Bool { false }
     override var isFlipped: Bool { false }
@@ -94,8 +110,11 @@ final class AppDockEdgeView: NSView {
         let headerBottom = bounds.maxY - b - header.height
         NSColor.black.set()
         NSRect(x: bounds.minX + b, y: headerBottom - b, width: bounds.width - 2 * b, height: b).fill()
-        AppDockDrawing.strokeInside(bounds, width: b, color: .black)
-        AppDockDrawing.strokeInside(bounds.insetBy(dx: b, dy: b), width: b, color: NSColor(white: 1, alpha: 0.07))
+        // Lit like ElvUI's skinned frames on hover: the 1 pt edge itself turns the class
+        // color, the inner highlight brightens a touch with it.
+        AppDockDrawing.strokeInside(bounds, width: b, color: accent?.nsColor ?? .black)
+        AppDockDrawing.strokeInside(bounds.insetBy(dx: b, dy: b), width: b,
+                                    color: NSColor(white: 1, alpha: accent == nil ? 0.07 : 0.12))
     }
 }
 
@@ -106,12 +125,15 @@ struct AppDockSlotOutlineStyle: Equatable {
     var fontSize: CGFloat
     // Close enough that a drop snaps the panel back.
     var nearSlot: Bool
+    // The dragged panel, in the outline's own coordinates: nothing is drawn there.
+    var cover: CGRect?
 }
 
 // The panel's home while it is dragged, drawn like an ElvUI mover in /moveui: a dim box with
-// a black edge and its name in the middle. When the panel comes close enough to snap, the
-// outline moves above the panel and turns into a bare accent frame, so the exact landing spot
-// shows over the panel's own text.
+// a black edge and its name in the middle. It lies under the panel and is drawn only where
+// the panel does not cover it (the panel is see-through), so it never crosses the panel's
+// text. Close enough to snap, its edge goes full accent: with the panel's own accent edge
+// (AppDockEdgeView) the strip still showing between them is the landing spot.
 final class AppDockSlotOutlineView: NSView {
     var outline: AppDockSlotOutlineStyle? {
         didSet {
@@ -136,17 +158,28 @@ final class AppDockSlotOutlineView: NSView {
         }
         let b = AppDockGeometry.borderWidth
         let accent = outline.colors.accent.nsColor
-        if outline.nearSlot {
-            AppDockDrawing.strokeInside(bounds, width: b, color: .black)
-            AppDockDrawing.strokeInside(bounds.insetBy(dx: b, dy: b), width: 2 * b, color: accent)
+        let visible = outline.cover.map { AppDockPlacementMath.uncovered(bounds, by: $0) } ?? [bounds]
+        guard !visible.isEmpty else {
             return
         }
+        NSGraphicsContext.saveGraphicsState()
+        defer {
+            NSGraphicsContext.restoreGraphicsState()
+        }
+        let clip = NSBezierPath()
+        visible.forEach { clip.appendRect($0) }
+        clip.addClip()
+
         NSColor(white: 0, alpha: 0.46).set()
         bounds.fill(using: .sourceOver)
         accent.withAlphaComponent(0.05).set()
         bounds.fill(using: .sourceOver)
         AppDockDrawing.strokeInside(bounds, width: b, color: .black)
-        AppDockDrawing.strokeInside(bounds.insetBy(dx: b, dy: b), width: b, color: accent.withAlphaComponent(0.6))
+        AppDockDrawing.strokeInside(bounds.insetBy(dx: b, dy: b), width: b,
+                                    color: outline.nearSlot ? accent : accent.withAlphaComponent(0.6))
+        if outline.nearSlot {
+            return
+        }
 
         let label = String(localized: "AppDock.SlotOutline.SnapBackHere",
                            defaultValue: "Snap back here",
@@ -155,11 +188,14 @@ final class AppDockSlotOutlineView: NSView {
         let text = NSAttributedString(string: label,
                                       attributes: [.font: font, .foregroundColor: outline.colors.text.nsColor])
         let size = text.size()
-        guard size.width < bounds.width - 4 * b else {
+        let origin = NSPoint(x: bounds.midX - size.width / 2,
+                             y: bounds.midY - (font.ascender + font.descender) / 2 + font.descender)
+        // Whole or not at all: a name half under the panel reads as a glitch.
+        let textRect = NSRect(origin: origin, size: size)
+        guard size.width < bounds.width - 4 * b, !(outline.cover?.intersects(textRect) ?? false) else {
             return
         }
-        text.draw(at: NSPoint(x: bounds.midX - size.width / 2,
-                              y: bounds.midY - (font.ascender + font.descender) / 2 + font.descender))
+        text.draw(at: origin)
     }
 }
 
@@ -199,6 +235,7 @@ final class AppDockChrome {
             headerPanel.setFrame(g.headerFrame, display: true)
         }
         edgeView.header = g.header
+        edgeView.accent = style.edgeAccent
         headerView.header = g.header
         headerView.style = style
     }
@@ -224,26 +261,19 @@ final class AppDockChrome {
         }
     }
 
-    // While the panel in `window` is dragged: its slot at `frame`. Away from the slot the
-    // outline sits under the panel (the panel passes over it); near enough to snap it goes
-    // above the panel and its edges, so the landing frame stays visible.
+    // While the panel in `window` is dragged: its slot at `frame`. The outline always sits
+    // under the panel, near the slot or not, and its style leaves out the panel's own frame
+    // (AppDockSlotOutlineStyle.cover), so nothing of it is ever drawn across the panel.
     func showSlotOutline(frame: CGRect, style: AppDockSlotOutlineStyle, panelWindow window: NSWindow) {
         if slotOutlinePanel.frame != frame {
             slotOutlinePanel.setFrame(frame, display: true)
         }
-        let wasNear = slotOutlineView.outline?.nearSlot
         slotOutlineView.outline = style
-        guard !slotOutlinePanel.isVisible || wasNear != style.nearSlot else {
+        guard !slotOutlinePanel.isVisible else {
             return
         }
-        if style.nearSlot {
-            // One level up: above the panel and its child windows whatever their order.
-            slotOutlinePanel.level = NSWindow.Level(rawValue: level.rawValue + 1)
-            slotOutlinePanel.orderFrontRegardless()
-        } else {
-            slotOutlinePanel.level = level
-            slotOutlinePanel.order(.below, relativeTo: window.windowNumber)
-        }
+        slotOutlinePanel.level = level
+        slotOutlinePanel.order(.below, relativeTo: window.windowNumber)
     }
 
     func hideSlotOutline() {

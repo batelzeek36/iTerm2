@@ -167,4 +167,22 @@ enum AppDockPlacementMath {
         }
         return hypot(offset.dx, offset.dy) * pointsPerUnit <= snapDistance
     }
+
+    // The parts of `rect` that `cover` leaves showing, as rectangles that do not overlap each
+    // other or `cover`: the full-width bands below and above it, then the side pieces beside
+    // it. The slot outline draws only there, so nothing of it ever lands on the dragged
+    // panel, which is see-through.
+    static func uncovered(_ rect: CGRect, by cover: CGRect) -> [CGRect] {
+        let hole = rect.intersection(cover)
+        guard !hole.isNull, hole.width > 0, hole.height > 0 else {
+            return rect.isEmpty ? [] : [rect]
+        }
+        let pieces = [
+            CGRect(x: rect.minX, y: rect.minY, width: rect.width, height: hole.minY - rect.minY),
+            CGRect(x: rect.minX, y: hole.maxY, width: rect.width, height: rect.maxY - hole.maxY),
+            CGRect(x: rect.minX, y: hole.minY, width: hole.minX - rect.minX, height: hole.height),
+            CGRect(x: hole.maxX, y: hole.minY, width: rect.maxX - hole.maxX, height: hole.height),
+        ]
+        return pieces.filter { $0.width > 0 && $0.height > 0 }
+    }
 }

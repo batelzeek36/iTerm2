@@ -260,8 +260,11 @@ final class AppDockHeaderView: NSView {
         NSBezierPath(ovalIn: dotRect).fill()
         x += dot + header.fontSize * 0.35
 
-        let title = NSAttributedString(string: style.title,
-                                       attributes: [.font: font, .foregroundColor: style.colors.accent.nsColor])
+        let titleAttributes: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: style.colors.accent.nsColor]
+        let titleString = AppDockTextFit.fitted(style.title, width: rightLimit - x) {
+            NSAttributedString(string: $0, attributes: titleAttributes).size().width
+        }
+        let title = NSAttributedString(string: titleString, attributes: titleAttributes)
         title.draw(at: NSPoint(x: x, y: baselineY + font.descender))
         x += title.size().width + header.gap
 
@@ -272,13 +275,13 @@ final class AppDockHeaderView: NSView {
         let hintX = rightLimit - hintWidth
 
         if !style.subtitle.isEmpty, x < hintX - header.gap {
-            let subtitle = NSAttributedString(string: style.subtitle,
-                                              attributes: [.font: font, .foregroundColor: style.colors.text.nsColor])
-            let available = hintX - header.gap - x
-            NSGraphicsContext.saveGraphicsState()
-            NSRect(x: x, y: rect.minY, width: available, height: rect.height).clip()
-            subtitle.draw(at: NSPoint(x: x, y: baselineY + font.descender))
-            NSGraphicsContext.restoreGraphicsState()
+            // Cut at a letter with an ellipsis when the hint leaves too little room.
+            let subtitleAttributes: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: style.colors.text.nsColor]
+            let shown = AppDockTextFit.fitted(style.subtitle, width: hintX - header.gap - x) {
+                NSAttributedString(string: $0, attributes: subtitleAttributes).size().width
+            }
+            NSAttributedString(string: shown, attributes: subtitleAttributes)
+                .draw(at: NSPoint(x: x, y: baselineY + font.descender))
         }
         if hintWidth > 0, hintX > x {
             hint.draw(at: NSPoint(x: hintX, y: baselineY + hintFont.descender))
@@ -321,5 +324,44 @@ final class AppDockHeaderView: NSView {
         path.lineJoinStyle = .miter
         glyph.set()
         path.stroke()
+    }
+}
+
+// Header text in the room it has: whole when it fits, else cut at the end with an ellipsis,
+// like a truncated chat tab name. Never a letter cut in half.
+enum AppDockTextFit {
+    static let ellipsis = "…"
+
+    // `text` as drawn in at most `width` points, `measure` giving a string's drawn width: the
+    // longest start of it that fits with the ellipsis (spaces before the ellipsis dropped),
+    // or "" when not even one character and the ellipsis fit.
+    static func fitted(_ text: String, width: CGFloat, measure: (String) -> CGFloat) -> String {
+        guard !text.isEmpty, width > 0, width.isFinite else {
+            return ""
+        }
+        if measure(text) <= width {
+            return text
+        }
+        let characters = Array(text)
+        func cut(_ count: Int) -> String {
+            var start = String(characters[0..<count])
+            while let last = start.last, last.isWhitespace {
+                start.removeLast()
+            }
+            return start + ellipsis
+        }
+        // Widths grow with the count: the largest count that fits, by bisection.
+        var low = 0
+        var high = characters.count - 1
+        while low < high {
+            let mid = (low + high + 1) / 2
+            if measure(cut(mid)) <= width {
+                low = mid
+            } else {
+                high = mid - 1
+            }
+        }
+        let result = cut(low)
+        return result == ellipsis ? "" : result
     }
 }
