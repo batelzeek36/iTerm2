@@ -6,7 +6,8 @@
 //  2026-11-15): the tall layout, the dragged offset in UI units, keeping the panel inside the
 //  window, snapping back, the saved form, what a press on the header means and what its hint
 //  says. The slot is ElvUI's right chat as Zach has it (472 x 259 units, BOTTOMRIGHT -4,4 at
-//  UI scale 0.63).
+//  UI scale 0.63). Also the feedback while dragging: the slot outline never draws on the
+//  panel and the panel's own edge lights in snap range, and header text cut with an ellipsis.
 //
 
 import XCTest
@@ -367,5 +368,261 @@ final class AppDockPlacementTests: XCTestCase {
         XCTAssertEqual(hint(.handle, moved: true, drag: .away), .hotKey)
         XCTAssertEqual(hint(.handle, moved: true, drag: .nearSlot), .releaseToSnapBack)
         XCTAssertEqual(hint(.sizeButton, drag: .nearSlot), .releaseToSnapBack)
+    }
+
+    // MARK: - Snap range: nothing crosses the panel
+
+    // Rectangles that each lie in `rect`, overlap neither `cover` nor each other, and add up
+    // to all of `rect` that `cover` leaves showing.
+    private func assertUncovered(_ rect: CGRect, by cover: CGRect,
+                                 file: StaticString = #filePath, line: UInt = #line) {
+        let pieces = AppDockPlacementMath.uncovered(rect, by: cover)
+        let area = { (r: CGRect) -> CGFloat in r.isNull ? 0 : r.width * r.height }
+        for (i, piece) in pieces.enumerated() {
+            XCTAssertGreaterThan(area(piece), 0, "no empty pieces", file: file, line: line)
+            XCTAssertEqual(area(piece.intersection(rect)), area(piece), accuracy: 1e-9, "inside the rect", file: file, line: line)
+            XCTAssertEqual(area(piece.intersection(cover)), 0, accuracy: 1e-9, "never on the cover: \(piece)", file: file, line: line)
+            for other in pieces[(i + 1)...] {
+                XCTAssertEqual(area(piece.intersection(other)), 0, accuracy: 1e-9, "pieces apart", file: file, line: line)
+            }
+        }
+        let shown = area(rect) - area(rect.intersection(cover))
+        XCTAssertEqual(pieces.map(area).reduce(0, +), shown, accuracy: 1e-6, "all that shows", file: file, line: line)
+    }
+
+    func testUncoveredPartsNeverTouchThePanel() {
+        let rect = CGRect(x: 0, y: 0, width: 351, height: 416.5)
+        let offsets: [CGVector] = [
+            CGVector(dx: 0, dy: 9.5),     // 9.7 pt up, as the evaluator saw it (snapped)
+            CGVector(dx: -3, dy: 9),      // the Mini near-up case
+            CGVector(dx: -0.5, dy: 1.5),  // nearly home
+            CGVector(dx: 9.5, dy: 0),
+            CGVector(dx: -6.5, dy: -5),
+            CGVector(dx: 0, dy: 0),       // home: nothing shows
+            CGVector(dx: -60, dy: 40),    // away, overlapping
+            CGVector(dx: -500, dy: 300),  // away, clear of it
+        ]
+        for d in offsets {
+            assertUncovered(rect, by: rect.offsetBy(dx: d.dx, dy: d.dy))
+        }
+        assertUncovered(rect, by: rect.insetBy(dx: 40, dy: 40))
+        assertUncovered(rect, by: rect.insetBy(dx: -40, dy: -40))
+        assertUncovered(rect, by: CGRect(x: 100, y: -50, width: 20, height: 600))
+        XCTAssertEqual(AppDockPlacementMath.uncovered(rect, by: rect), [])
+        XCTAssertEqual(AppDockPlacementMath.uncovered(rect, by: rect.insetBy(dx: -1, dy: -1)), [])
+        XCTAssertEqual(AppDockPlacementMath.uncovered(rect, by: rect.offsetBy(dx: 400, dy: 0)), [rect])
+        XCTAssertEqual(AppDockPlacementMath.uncovered(rect, by: .null), [rect])
+        XCTAssertEqual(AppDockPlacementMath.uncovered(rect, by: rect.offsetBy(dx: 0, dy: 9.5)),
+                       [CGRect(x: 0, y: 0, width: 351, height: 9.5)],
+                       "panel lifted straight up: only the band under it shows")
+    }
+
+    private let accent = AppDockRGBA(red: 0x3f, green: 0xc7, blue: 0xeb, alpha: 255)
+
+    private var dockColors: AppDockSettings.Colors {
+        var colors = AppDockSettings.Colors()
+        colors.accent = accent
+        return colors
+    }
+
+    // `view` drawn into a fresh 2x bitmap, the way a Retina screen shows it.
+    private func draw(_ view: NSView) throws -> NSBitmapImageRep {
+        let rep = try XCTUnwrap(NSBitmapImageRep(bitmapDataPlanes: nil,
+                                                 pixelsWide: Int((view.bounds.width * 2).rounded()),
+                                                 pixelsHigh: Int((view.bounds.height * 2).rounded()),
+                                                 bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+                                                 colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0)?
+            .retagging(with: .sRGB))
+        rep.size = view.bounds.size
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
+        view.draw(view.bounds)
+        NSGraphicsContext.restoreGraphicsState()
+        return rep
+    }
+
+    // Pixels of `rep` whose center lies in `rect` (view points, origin bottom left) and whose
+    // alpha passes `test`.
+    private func count(_ rep: NSBitmapImageRep, in rect: CGRect, where test: (UInt8) -> Bool) -> Int {
+        guard let data = rep.bitmapData else {
+            return -1
+        }
+        var n = 0
+        let height = rep.size.height
+        for py in 0..<rep.pixelsHigh {
+            let y = height - (CGFloat(py) + 0.5) / 2
+            guard y > rect.minY, y < rect.maxY else {
+                continue
+            }
+            for px in 0..<rep.pixelsWide {
+                let x = (CGFloat(px) + 0.5) / 2
+                guard x > rect.minX, x < rect.maxX else {
+                    continue
+                }
+                if test(data[py * rep.bytesPerRow + px * 4 + 3]) {
+                    n += 1
+                }
+            }
+        }
+        return n
+    }
+
+    // The slot and the dragged panel as the controller computes them: frames snapped to
+    // device pixels, the cover in the outline's own coordinates.
+    private func slotAndCover(_ size: AppDockPanelSize, offset: CGVector) throws -> (bounds: CGRect, cover: CGRect, header: AppDockHeaderMetrics) {
+        let sized = AppDockPlacementMath.sized(slot, size: size, tallHeight: 560)
+        let home = try XCTUnwrap(AppDockGeometry(layout: sized, contentRect: content, backingScale: 2))
+        let shown = AppDockPlacementMath.clampedOffset(offset, slot: sized, contentRect: content)
+        let panel = try XCTUnwrap(AppDockGeometry(layout: AppDockPlacementMath.moved(sized, by: shown),
+                                                  contentRect: content, backingScale: 2))
+        let cover = panel.panelFrame.offsetBy(dx: -home.panelFrame.minX, dy: -home.panelFrame.minY)
+        return (CGRect(origin: .zero, size: home.panelFrame.size), cover, home.header)
+    }
+
+    private func outline(_ bounds: CGRect, near: Bool, cover: CGRect?, fontSize: CGFloat) -> AppDockSlotOutlineView {
+        let view = AppDockSlotOutlineView(frame: bounds)
+        view.outline = AppDockSlotOutlineStyle(colors: dockColors, fontSize: fontSize, nearSlot: near, cover: cover)
+        return view
+    }
+
+    func testSlotOutlineNeverDrawsOnThePanel() throws {
+        // Offsets in UI units (0.744 pt each here): the evaluator's 9.7 pt up, the Mini near-up
+        // case, 1-2 pt from home, sideways, exactly home, and away while still overlapping.
+        let cases: [(AppDockPanelSize, CGVector, Bool)] = [
+            (.tall, CGVector(dx: 0, dy: 13), true),
+            (.mini, CGVector(dx: -4, dy: 12), true),
+            (.tall, CGVector(dx: -1, dy: 2), true),
+            (.mini, CGVector(dx: -13, dy: 0), true),
+            (.tall, CGVector(dx: -9, dy: 7), true),
+            (.mini, .zero, true),
+            (.tall, CGVector(dx: -60, dy: 40), false),
+            (.mini, CGVector(dx: -200, dy: 100), false),
+        ]
+        for (size, offset, near) in cases {
+            let (bounds, cover, header) = try slotAndCover(size, offset: offset)
+            XCTAssertEqual(AppDockPlacementMath.snapsToSlot(offset, pointsPerUnit: slot.pointsPerUnit(contentHeight: content.height)),
+                           near, "\(offset) is \(near ? "in" : "out of") snap range")
+            let rep = try draw(outline(bounds, near: near, cover: cover, fontSize: header.fontSize))
+            XCTAssertEqual(count(rep, in: cover, where: { $0 > 0 }), 0, "\(size) \(offset): a pixel on the panel")
+            let showing = AppDockPlacementMath.uncovered(bounds, by: cover)
+            let drawn = count(rep, in: bounds, where: { $0 > 0 })
+            if showing.isEmpty {
+                XCTAssertEqual(drawn, 0, "home: the panel hides the slot entirely")
+            } else {
+                XCTAssertGreaterThan(drawn, 0, "\(size) \(offset): the slot still shows beside the panel")
+            }
+        }
+    }
+
+    func testSlotOutlineAwayFromThePanelLooksAsBefore() throws {
+        let (bounds, cover, header) = try slotAndCover(.tall, offset: CGVector(dx: -560, dy: 130))
+        XCTAssertFalse(cover.intersects(bounds))
+        let withCover = try draw(outline(bounds, near: false, cover: cover, fontSize: header.fontSize))
+        let without = try draw(outline(bounds, near: false, cover: nil, fontSize: header.fontSize))
+        XCTAssertEqual(withCover.tiffRepresentation, without.tiffRepresentation)
+    }
+
+    func testSnapBackLabelIsWholeOrHidden() throws {
+        let (bounds, _, header) = try slotAndCover(.mini, offset: .zero)
+        // Opaque pixels well inside the edges are the label's (the box itself is dim).
+        let middle = bounds.insetBy(dx: 8, dy: 8)
+        let opaque = { (a: UInt8) -> Bool in a > 230 }
+        let clear = try draw(outline(bounds, near: false, cover: nil, fontSize: header.fontSize))
+        XCTAssertGreaterThan(count(clear, in: middle, where: opaque), 20, "label drawn when nothing covers it")
+        // The panel over the label's left half: none of it may stick out on the right.
+        let halfCover = CGRect(x: -400, y: -400, width: 400 + bounds.midX, height: 800)
+        let half = try draw(outline(bounds, near: false, cover: halfCover, fontSize: header.fontSize))
+        XCTAssertEqual(count(half, in: middle, where: opaque), 0)
+        // Near the slot there is no label at all.
+        let near = try draw(outline(bounds, near: true, cover: nil, fontSize: header.fontSize))
+        XCTAssertEqual(count(near, in: middle, where: opaque), 0)
+    }
+
+    func testPanelEdgeLightsOnlyInSnapRange() throws {
+        var style = AppDockChromeStyle(title: "Claude", subtitle: "wow-forever", hotKeyHint: "⌃⌥⌘C",
+                                       colors: dockColors, backdrop: AppDockRGBA(red: 6, green: 6, blue: 7, alpha: 153))
+        XCTAssertNil(style.edgeAccent)
+        style.drag = .away
+        XCTAssertNil(style.edgeAccent, "away from the slot the edge stays black")
+        style.drag = .nearSlot
+        XCTAssertEqual(style.edgeAccent, accent)
+
+        let edge = AppDockEdgeView(frame: CGRect(x: 0, y: 0, width: 120, height: 80))
+        edge.header = AppDockHeaderMetrics(terminalFontSize: 8.5, backingScale: 2)
+        // The left edge, halfway up, against a plain fill of the color through the same bitmap.
+        func outerPixel(_ view: NSView) throws -> [CGFloat] {
+            let rep = try draw(view)
+            let c = try XCTUnwrap(rep.colorAt(x: 0, y: rep.pixelsHigh / 2))
+            return [c.redComponent, c.greenComponent, c.blueComponent, c.alphaComponent]
+        }
+        func assertPixel(_ actual: [CGFloat], _ color: NSColor, _ message: String,
+                         file: StaticString = #filePath, line: UInt = #line) throws {
+            let swatch = AppDockSwatchView(frame: edge.frame, color: color)
+            for (a, e) in zip(actual, try outerPixel(swatch)) {
+                XCTAssertEqual(a, e, accuracy: 0.01, message, file: file, line: line)
+            }
+        }
+        try assertPixel(try outerPixel(edge), .black, "black edge at rest")
+        edge.accent = style.edgeAccent
+        try assertPixel(try outerPixel(edge), accent.nsColor, "accent edge in snap range")
+        edge.accent = nil
+        try assertPixel(try outerPixel(edge), .black, "black again once out of range")
+    }
+
+    // MARK: - Header text fit
+
+    func testTextFitCutsWithAnEllipsis() {
+        // One point per character, the ellipsis included.
+        let measure = { (s: String) -> CGFloat in CGFloat(s.count) }
+        func fit(_ text: String, _ width: CGFloat) -> String {
+            return AppDockTextFit.fitted(text, width: width, measure: measure)
+        }
+        XCTAssertEqual(fit("wow-forever", 20), "wow-forever")
+        XCTAssertEqual(fit("wow-forever", 11), "wow-forever", "an exact fit is whole")
+        XCTAssertEqual(fit("wow-forever-addons", 8), "wow-for…")
+        XCTAssertEqual(fit("ab cd", 4), "ab…", "no space before the ellipsis")
+        XCTAssertEqual(fit("abc", 2), "a…")
+        XCTAssertEqual(fit("abc", 1), "", "a lone ellipsis is not shown")
+        XCTAssertEqual(fit("abc", 0), "")
+        XCTAssertEqual(fit("abc", -5), "")
+        XCTAssertEqual(fit("abc", .nan), "")
+        XCTAssertEqual(fit("", 10), "")
+        for width in stride(from: CGFloat(0), through: 20, by: 0.5) {
+            let s = fit("wow-forever-addons", width)
+            XCTAssertLessThanOrEqual(measure(s), width)
+            XCTAssertTrue(s.isEmpty || s == "wow-forever-addons" ||
+                          ("wow-forever-addons".hasPrefix(String(s.dropLast())) && s.hasSuffix("…")), s)
+        }
+    }
+
+    func testTextFitWithTheHeaderFont() {
+        let font = AppDockHeaderView.headerFont(size: 9.5)
+        let width = { (s: String) -> CGFloat in NSAttributedString(string: s, attributes: [.font: font]).size().width }
+        let long = "wow-forever-addons-buffcard-rework"
+        let room = width(long) * 0.6
+        let shown = AppDockTextFit.fitted(long, width: room, measure: width)
+        XCTAssertTrue(shown.hasSuffix("…"), shown)
+        XCTAssertLessThanOrEqual(width(shown), room)
+        let next = String(long.prefix(shown.count)) + "…"
+        XCTAssertGreaterThan(width(next), room, "as long as fits: one more letter would not")
+    }
+}
+
+// A plain fill, for comparing a drawn pixel with its color through the same bitmap.
+private final class AppDockSwatchView: NSView {
+    private let color: NSColor
+
+    init(frame: NSRect, color: NSColor) {
+        self.color = color
+        super.init(frame: frame)
+    }
+
+    required init?(coder: NSCoder) {
+        it_fatalError("init(coder:) has not been implemented")
+    }
+
+    override func draw(_ dirtyRect: NSRect) {
+        color.set()
+        bounds.fill()
     }
 }

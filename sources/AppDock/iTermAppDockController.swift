@@ -577,14 +577,18 @@ final class AppDockController: NSObject {
 
     private func updateSlotOutline(slot: AppDockLayout, contentRect: CGRect, backingScale: CGFloat, panelWindow: NSWindow) {
         guard drag != nil,
+              let panelFrame = geometry?.panelFrame,
               let home = AppDockGeometry(layout: slot, contentRect: contentRect, backingScale: backingScale) else {
             chrome.hideSlotOutline()
             return
         }
+        // The dragged panel in the outline's coordinates: the outline never draws there.
+        let cover = panelFrame.offsetBy(dx: -home.panelFrame.minX, dy: -home.panelFrame.minY)
         chrome.showSlotOutline(frame: home.panelFrame,
                                style: AppDockSlotOutlineStyle(colors: settings.colors,
                                                               fontSize: home.header.fontSize,
-                                                              nearSlot: dragFeedback == .nearSlot),
+                                                              nearSlot: dragFeedback == .nearSlot,
+                                                              cover: cover),
                                panelWindow: panelWindow)
     }
 

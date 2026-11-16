@@ -45,11 +45,18 @@ committed work gets built.
     focuses. The offset is kept in UI units from the slot, so a moved panel follows WoW's
     moves, resizes and UI scale exactly as the slot does, and it is kept inside the window
     (the whole panel when it fits, else the header). While dragging, the slot shows like an
-    ElvUI mover (dim box, class-blue edge, “Snap back here”); within 12 pt of it the outline
-    jumps above the panel as a class-blue frame, the header says “Release to snap back”, and
-    letting go puts it exactly back. Way back from anywhere: **double-click the header**
-    (hovering a moved panel's header says “Double-click to snap back”; the first click of
-    the double click focuses the panel, like any header click).
+    ElvUI mover (dim box, class-blue edge, “Snap back here”). The mover always lies under
+    the panel and is never drawn where the panel is (the panel is see-through), so none of
+    its lines cross the panel's text; its name shows whole or not at all. Within 12 pt of it
+    the panel's own 1 pt edge turns class blue, the mover's edge goes full class blue in the
+    strip still showing beside the panel (the landing spot), the header says “Release to
+    snap back”, and letting go puts it exactly back (fix 2026-11-15 after the design review:
+    the first build drew that frame above the panel, through its text). Way back from
+    anywhere: **double-click the header** (hovering a moved panel's header says
+    “Double-click to snap back”; the first click of the double click focuses the panel,
+    like any header click).
+  - Header text that doesn't fit is cut with an ellipsis (“wow-forever-addons-buffcard-re…”),
+    never mid-letter: the subtitle gives way to the hint, the title to the size button.
   - Size and offset are saved per profile GUID in this app's user defaults,
     `NoSyncAppDockPanelPlacements` (Claude Dock: `~/Library/Preferences/ClaudeDock.plist`),
     and survive restarts; they win over `"Dock Default Size"`. Reset by hand: quit Claude
@@ -58,6 +65,14 @@ committed work gets built.
     form), `iTermAppDockHeaderGesture.swift` (click / drag / double click / button, the
     hint), `iTermAppDockHeaderView.swift`, `iTermAppDockPlacementStore.swift`; tests
     `ModernTests/AppDockPlacementTests.swift`.
+  - **Known polish** (design review 2026-11-15, logged, not changed; each is Zach's call):
+    - Tall's header sits over the Questie tracker's text (the strip has the panel's 40%
+      see-through backdrop); an optional darker backing behind just the header strip
+      would fix it.
+    - In Mini at rest, the button's chevron sits right next to the ⌃ of the hotkey hint
+      (⌃⌥⌘C): the gap between them reads tight.
+    - Dropped over the action bars, WoW's keybind labels show through the panel (the
+      approved, frozen 40% backdrop).
   - ZachPaladin's `/zdock` (wow-forever-addons, dock.lua) empties the slot on the game's
     side: ElvUI's right chat hidden (its chat types join the main chat), its toggle parked,
     tooltips above the slot; `/zdock off` undoes it.
