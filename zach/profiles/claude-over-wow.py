@@ -200,10 +200,21 @@ def main():
         sys.exit(__doc__)
     os.makedirs(out_dir, exist_ok=True)
     path = os.path.join(out_dir, "claude-over-wow.json")
-    tmp = path + ".tmp"
+    text = json.dumps({"Profiles": [profile(test)]}, indent=2, ensure_ascii=False) + "\n"
+    try:
+        with open(path) as f:
+            if f.read() == text:
+                # A running Claude Dock reloads its profiles on any change in the folder.
+                print("unchanged", path)
+                return
+    except FileNotFoundError:
+        pass
+    # The temp name starts with a dot: iTerm2 loads every other file in the folder, so a
+    # "claude-over-wow.json.tmp" next to the profile was a second profile with the same Guid
+    # (the "Two dynamic profiles have the same Guid" box, 2026-11-15).
+    tmp = os.path.join(out_dir, ".claude-over-wow.json.tmp")
     with open(tmp, "w") as f:
-        json.dump({"Profiles": [profile(test)]}, f, indent=2, ensure_ascii=False)
-        f.write("\n")
+        f.write(text)
     os.replace(tmp, path)
     print("wrote", path)
 
