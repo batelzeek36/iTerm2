@@ -9,8 +9,9 @@
     <array>
         <string>__HOME__/Documents/iTerm2-builds/bin/run-update</string>
     </array>
-    <!-- At load too (login, install.sh, quiet hours' wake): catches up a night the 04:00 run
-         was paused. update.sh exits at once when the newest nightly is already built. -->
+    <!-- At load too (login, install.sh). It runs during quiet hours as well (Zach 2026-11-15):
+         quiet hours keep this agent loaded. update.sh exits at once when the newest nightly is
+         already built. -->
     <key>RunAtLoad</key>
     <true/>
     <key>StartCalendarInterval</key>
