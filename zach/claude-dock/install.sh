@@ -92,9 +92,9 @@ hs_load() {   # $1 = lua that leaves the module started; writes "<nonce> <selfte
 local f = io.open('$marker', 'w')
 f:write('$nonce ' .. result)
 f:close()"
-    [ -x "$HS_BIN" ] && /usr/bin/perl -e 'alarm 12; exec @ARGV' "$HS_BIN" -t 10 -c "$lua" >/dev/null 2>&1 || true
+    [ -x "$HS_BIN" ] && /usr/bin/perl -e 'alarm 25; exec @ARGV' "$HS_BIN" -t 20 -c "$lua" >/dev/null 2>&1 || true
     local got=""
-    for _ in {1..20}; do
+    for _ in {1..80}; do   # 20 s: a busy Mac (load 60+) answers late
         got=$(cat "$marker" 2>/dev/null || true)
         [[ $got == "$nonce "* ]] && break
         sleep 0.25
