@@ -111,7 +111,11 @@ def profile(test):
         "Dynamic Profile Parent Name": "Default",
         "Tags": ["wow", "overlay"],
         "Custom Command": "Yes",
-        "Command": "/bin/zsh -lic 'cd ~/Documents/wow-forever-addons && exec claude'",
+        # Drop every inherited CLAUDE* variable before the login shell: Claude Dock started from
+        # inside a Claude Code session (`open` passes the caller's environment) made the panel's
+        # claude a "child session" of that one (its session id, no transcript saving; 11-15).
+        # The login shell then sets whatever Zach's rc files set.
+        "Command": "/bin/zsh -fc 'unset -m \"CLAUDE*\"; exec /bin/zsh -lic \"cd ~/Documents/wow-forever-addons && exec claude\"'",
         "Custom Directory": "Yes",
         "Working Directory": WORKDIR,
         # The fork docks this profile; an unmodified iTerm2 ignores the Dock keys.
