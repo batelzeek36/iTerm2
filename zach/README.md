@@ -73,6 +73,12 @@ committed work gets built.
       (⌃⌥⌘C): the gap between them reads tight.
     - Dropped over the action bars, WoW's keybind labels show through the panel (the
       approved, frozen 40% backdrop).
+    - (delta review, 4.00, no P1) Near the slot, the panel's blue edge and the visible strip
+      of the slot's blue edge run as two parallel lines a few points apart beside the panel.
+    - On a moved panel, hovering brings in "Double-click to snap back" and the subtitle
+      shortens to fit (its width changes on hover).
+    - Half-point rounding: the panel is 351.5 x 417 pt at some drag offsets and 351 x 416.5
+      at others (a 1 px edge jump at 2x while dragging; predates the snap fix).
   - ZachPaladin's `/zdock` (wow-forever-addons, dock.lua) empties the slot on the game's
     side: ElvUI's right chat hidden (its chat types join the main chat), its toggle parked,
     tooltips above the slot; `/zdock off` undoes it.
