@@ -21,10 +21,12 @@
         <key>Minute</key>
         <integer>0</integer>
     </dict>
+    <!-- Standard, not Background (Zach 2026-11-16: "let any wow builds run fast"): launchd's
+         Background clamp holds the whole build on the efficiency cores and nothing can lift it
+         from outside (11-16: 10.5 h). Nice 10 keeps WoW and the sessions ahead; mac-heavy-guard
+         rule 6 keeps it off background QoS while WoW runs. -->
     <key>ProcessType</key>
-    <string>Background</string>
-    <key>LowPriorityIO</key>
-    <true/>
+    <string>Standard</string>
     <key>Nice</key>
     <integer>10</integer>
     <key>StandardErrorPath</key>
