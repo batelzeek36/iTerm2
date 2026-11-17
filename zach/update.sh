@@ -8,9 +8,8 @@
 #    conflict: abort, keep the current build, notify Zach.
 # 3. Build it signed (zach/build.sh) and stage it. zach/swap-on-quit installs the staged
 #    build the next time iTerm2 quits.
-# 4. Make Claude Dock from the same build (zach/claude-dock/rebrand.sh) and stage it beside
-#    iTerm2's; swap-on-quit installs it whenever Claude Dock is not running. A failure there
-#    never holds back iTerm2: it is reported at the very end (exit 6).
+# 4. (Retired 2026-11-17) Claude Dock is no longer made from fork builds: it is its own app,
+#    ~/Developer/claude-dock.
 #
 # Only committed work on `zach` is built. Runs at background priority.
 #   zach/update.sh [--force]   --force rebuilds even when nothing changed.
@@ -70,35 +69,14 @@ ours=$(git rev-parse zach)
 build_id="$tag+$(git rev-parse --short "$ours")"
 echo "newest nightly: $tag, zach: $(git rev-parse --short "$ours")"
 
-# Claude Dock (zach/claude-dock): every fork build re-branded into its own app, staged in
-# staged-claude-dock/ for swap-on-quit. Builds from before the settings-suite hook are skipped
-# (rebrand.sh exits 3): a re-branded copy without it would share the main iTerm2's settings.
-DOCK_STAGED=$BUILDS/staged-claude-dock
-DOCK_FAILED=$BUILDS/claude-dock-failed
-dock_has() {   # $1 = build id: Claude Dock has it staged or installed
-    { [ -d "$DOCK_STAGED/Claude Dock.app" ] && [ "$(cat "$DOCK_STAGED/BUILD_ID" 2>/dev/null)" = "$1" ]; } ||
-        [ "$(cat "$BUILDS/installed-claude-dock-BUILD_ID" 2>/dev/null)" = "$1" ]
-}
-# Returns 0 when staged (or nothing to do), 1 when the re-brand failed. Notifies once per build.
-make_claude_dock() {   # $1 = signed iTerm2.app of build $build_id, $2 = the tree it was built from
-    local rebrand="$2/zach/claude-dock/rebrand.sh" code=0
-    if [ ! -x "$rebrand" ]; then
-        echo "Claude Dock: $build_id has no zach/claude-dock; not making it"
-        return 0
-    fi
-    "$rebrand" "$1" "$DOCK_STAGED" --build-id "$build_id" || code=$?
-    case $code in
-        0) rm -f "${DOCK_FAILED:?}"
-           echo "Claude Dock: staged $build_id; it installs whenever Claude Dock is not running"
-           return 0 ;;
-        3) echo "Claude Dock: $build_id predates the settings-suite hook; not making it"
-           return 0 ;;
-    esac
-    if [ "$(cat "$DOCK_FAILED" 2>/dev/null)" != "$build_id" ]; then
-        echo "$build_id" > "$DOCK_FAILED"
-        notify "Claude Dock could not be made from $build_id (rebrand exit $code); still on the previous Claude Dock (log: $LOG)"
-    fi
-    return 1
+# Claude Dock is its own app since 2026-11-17 (~/Developer/claude-dock, bundle.sh --install puts it in
+# /Applications). Fork builds no longer make or stage it: a re-branded copy in staged-claude-dock/
+# would be swapped over the real one by swap-on-quit the next time it quits or relaunches itself.
+# zach/claude-dock/rebrand.sh stays in the tree, unused.
+dock_has() { return 0; }
+make_claude_dock() {
+    echo "Claude Dock: made by ~/Developer/claude-dock now, not from fork builds"
+    return 0
 }
 
 if [ "${1:-}" != "--force" ] && [ -f "$STATE" ] && [ "$(cat "$STATE")" = "$build_id" ]; then
